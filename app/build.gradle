@@ -9,7 +9,7 @@ android {
         targetSdkVersion 27
         versionCode 7
         versionName "1.6"
-        archivesBaseName="云村清洁工_v${versionName}"
+        archivesBaseName="PureNeteaseCloudMusic-Xposed_v${versionName}"
     }
     buildTypes {
         release {
