@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hide_icon_title">隐藏桌面图标</string>
+    <string name="hide_icon_summary">隐藏后，下次可从Xposed Installer中打开</string>
+    <string name="category_general_title">通用</string>
+    <string name="convert_to_play_title">伪装为Play版本</string>
+    <string name="convert_to_play_summary">获得Play版本的全部特性，去除大部分广告，如首屏广告，日推横幅广告等</string>
+    <string name="disable_sign_jump_to_small_title">禁止签到跳转</string>
+    <string name="category_comment_title">评论区</string>
+    <string name="remove_comment_ad_title">移除广告</string>
+    <string name="remove_comment_video_title">移除视频</string>
+    <string name="remove_comment_topic_title">移除文章</string>
+    <string name="remove_comment_concert_info_title">移除音乐会信息</string>
+    <string name="enable_vip_feature_title">启用部分会员特权</string>
+    <string name="enable_vip_feature_summary">免费使用会员主题及歌词图片功能</string>
+    <string name="zero_point_download_video_title">免积分下载超清MV</string>
+    <string name="remove_home_banner_ad_title">移除主界面Banner广告</string>
+    <string name="category_funcpart_title">功能分区</string>
+    <string name="remove_func_dynamic_title">隐藏动态分区</string>
+    <string name="remove_func_video_title">隐藏视频分区</string>
+    <string name="remove_func_radio_title">隐藏电台TAB分区</string>
+    <string name="category_sidebar_title">侧滑栏</string>
+    <string name="hide_dot_title">隐藏小红点</string>
+    <string name="hide_item_vip_title">隐藏VIP会员</string>
+    <string name="hide_item_shop_title">隐藏商城</string>
+    <string name="hide_item_game_title">隐藏游戏推荐</string>
+    <string name="hide_item_free_data_title">隐藏在线听歌免流量</string>
+    <string name="hide_item_nearby_title">隐藏附近的人</string>
+    <string name="hide_item_ticket_title">隐藏优惠券</string>
+    <string name="enable_all_functions_title">启用模块</string>
+    <string name="work_right_now">更改立即生效</string>
+    <string name="work_after_reload">更改在结束软件进程或者重启后生效</string>
+</resources>

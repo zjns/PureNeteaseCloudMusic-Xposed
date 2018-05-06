@@ -1,0 +1,30 @@
+apply plugin: 'com.android.application'
+
+android {
+    buildToolsVersion '27.0.3'
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "me.zjns.lovecloudmusic"
+        minSdkVersion 19
+        targetSdkVersion 27
+        versionCode 7
+        versionName "1.6"
+        archivesBaseName="云村清洁工_v${versionName}"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            zipAlignEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    compileOnly 'de.robv.android.xposed:api:82'
+}

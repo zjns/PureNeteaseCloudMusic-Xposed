@@ -1,0 +1,33 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="me.zjns.lovecloudmusic">
+
+    <application
+        android:allowBackup="true"
+        android:theme="@style/AppTheme"
+        android:label="云村清洁工">
+        <activity-alias
+            android:name=".MainActivityAlias"
+            android:targetActivity=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="de.robv.android.xposed.category.MODULE_SETTINGS" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="适用于网易云音乐" />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="53" />
+    </application>
+</manifest>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="hide_icon"
+        android:summary="@string/hide_icon_summary"
+        android:title="@string/hide_icon_title" />
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="enable_all_functions"
+        android:title="@string/enable_all_functions_title" />
+
+    <PreferenceCategory
+        android:dependency="enable_all_functions"
+        android:title="@string/category_general_title">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="disable_sign_jump_to_small"
+            android:title="@string/disable_sign_jump_to_small_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_home_banner_ad"
+            android:title="@string/remove_home_banner_ad_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="convert_to_play"
+            android:summary="@string/convert_to_play_summary"
+            android:title="@string/convert_to_play_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="zero_point_video"
+            android:title="@string/zero_point_download_video_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="enable_vip_feature"
+            android:summary="@string/enable_vip_feature_summary"
+            android:title="@string/enable_vip_feature_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:dependency="enable_all_functions"
+        android:title="@string/category_comment_title">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_comment_ad"
+            android:title="@string/remove_comment_ad_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_comment_video"
+            android:title="@string/remove_comment_video_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_comment_topic"
+            android:title="@string/remove_comment_topic_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_comment_concert_info"
+            android:title="@string/remove_comment_concert_info_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:dependency="enable_all_functions"
+        android:title="@string/category_funcpart_title">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_func_dynamic"
+            android:title="@string/remove_func_dynamic_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_func_video"
+            android:title="@string/remove_func_video_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_func_radio"
+            android:title="@string/remove_func_radio_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:dependency="enable_all_functions"
+        android:title="@string/category_sidebar_title">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="hide_dot"
+            android:title="@string/hide_dot_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="hide_item_vip"
+            android:title="@string/hide_item_vip_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="hide_item_shop"
+            android:title="@string/hide_item_shop_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="hide_item_game"
+            android:title="@string/hide_item_game_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="hide_item_free_data"
+            android:title="@string/hide_item_free_data_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="hide_item_nearby"
+            android:title="@string/hide_item_nearby_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="hide_item_ticket"
+            android:title="@string/hide_item_ticket_title" />
+    </PreferenceCategory>
+</PreferenceScreen>
