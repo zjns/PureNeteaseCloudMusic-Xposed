@@ -26,6 +26,7 @@ import static de.robv.android.xposed.XposedHelpers.findMethodExact;
 final class CloudMusic {
     private String versionName;
     private boolean dontJump;
+    private boolean autoSign;
     private boolean convertToPlay;
     private boolean removeAd;
     private boolean removeVideo;
@@ -85,6 +86,7 @@ final class CloudMusic {
     private void loadPrefs() {
         mSharedPrefs.reload();
         dontJump = mSharedPrefs.getBoolean("disable_sign_jump_to_small", false);
+        autoSign = mSharedPrefs.getBoolean("auto_sign", false);
         convertToPlay = mSharedPrefs.getBoolean("convert_to_play", false);
         removeAd = mSharedPrefs.getBoolean("remove_comment_ad", false);
         removeVideo = mSharedPrefs.getBoolean("remove_comment_video", false);
@@ -357,6 +359,13 @@ final class CloudMusic {
                     if (clazz == FrameLayout.class) {
                         ViewGroup.LayoutParams params = ((FrameLayout) textView.getParent()).getLayoutParams();
                         params.height = 0;
+                    }
+                } else if (dontJump && autoSign && "签到".equals(content)) {
+                    TextView textView = (TextView) param.thisObject;
+                    if (textView.getParent().getClass() == LinearLayout.class) {
+                        while (!textView.getText().toString().equals("已签到")) {
+                            textView.performClick();
+                        }
                     }
                 }
             }

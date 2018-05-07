@@ -28,6 +28,7 @@
     <string name="hide_item_nearby_title">隐藏附近的人</string>
     <string name="hide_item_ticket_title">隐藏优惠券</string>
     <string name="enable_all_functions_title">启用模块</string>
+    <string name="auto_sign_title">自动签到</string>
     <string name="work_right_now">更改立即生效</string>
     <string name="work_after_reload">更改在结束软件进程或者重启后生效</string>
 </resources>

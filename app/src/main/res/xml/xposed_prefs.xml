@@ -19,6 +19,11 @@
             android:title="@string/disable_sign_jump_to_small_title" />
         <SwitchPreference
             android:defaultValue="false"
+            android:dependency="disable_sign_jump_to_small"
+            android:key="auto_sign"
+            android:title="@string/auto_sign_title" />
+        <SwitchPreference
+            android:defaultValue="false"
             android:key="remove_home_banner_ad"
             android:title="@string/remove_home_banner_ad_title" />
         <SwitchPreference
