@@ -7,9 +7,9 @@ android {
         applicationId "me.zjns.lovecloudmusic"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 7
-        versionName "1.6"
-        archivesBaseName="PureNeteaseCloudMusic-Xposed_v${versionName}"
+        versionCode 8
+        versionName "1.7"
+        archivesBaseName = "Pure163Music-Xposed_v${versionName}"
     }
     buildTypes {
         release {

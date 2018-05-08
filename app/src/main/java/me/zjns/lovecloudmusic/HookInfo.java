@@ -147,21 +147,8 @@ final class HookInfo {
         return null;
     }
 
-    static List<String> getInnerFragmentClassName(String type) {
-        Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.fragment\\.[a-z]+\\$[1-9]+$");
-        List<String> list = ClassHelper.getFilteredClasses(true, pattern);
-        List<String> classNameList = new ArrayList<>();
-        for (String clazzName : list) {
-            Class<?> clazz = findClass(clazzName, loader);
-            if (findInnerFragmentClass(clazz, type)) {
-                classNameList.add(clazzName);
-            }
-        }
-        return classNameList;
-    }
-
     static Method getInnerFragmentMethod(String targetType) {
-        if (hookInfoCache.containsKey("method_" + targetType)) {
+        if (hookInfoCache.containsKey("class_" + targetType)) {
             //String tempMethodName = hookInfoCache.get("method_" + targetType);
             String tempClassName = hookInfoCache.get("class_" + targetType);
             Class<?> clazz = findClass(tempClassName, loader);
@@ -258,6 +245,19 @@ final class HookInfo {
             }
         }
         return null;
+    }
+
+    static List<String> getInnerFragmentClassName(String type) {
+        Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.fragment\\.[a-z]+\\$[1-9]+$");
+        List<String> list = ClassHelper.getFilteredClasses(true, pattern);
+        List<String> classNameList = new ArrayList<>();
+        for (String clazzName : list) {
+            Class<?> clazz = findClass(clazzName, loader);
+            if (findInnerFragmentClass(clazz, type)) {
+                classNameList.add(clazzName);
+            }
+        }
+        return classNameList;
     }
 
     private static boolean findInnerFragmentClass(Class<?> clazz, String targetType) {

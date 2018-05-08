@@ -50,7 +50,7 @@ final class CloudMusic {
     private static final boolean DEBUG = false;
     private static XSharedPreferences mSharedPrefs;
     private static CloudMusic mInstance;
-    private WeakReference<View> ViewRadio = null;
+    private WeakReference<View> viewRadio = null;
 
     private CloudMusic() {
     }
@@ -296,6 +296,7 @@ final class CloudMusic {
                 loadPrefs();
                 if (!removeHomeBannerAd) return;
                 List<?> list = (List) param.getResult();
+                if (list == null || list.isEmpty()) return;
                 Iterator<?> iterator = list.iterator();
                 while (iterator.hasNext()) {
                     Object banner = iterator.next();
@@ -325,7 +326,7 @@ final class CloudMusic {
                     TextView textView = (TextView) param.thisObject;
                     Class<?> clazz = textView.getParent().getClass().getSuperclass();
                     if (clazz == LinearLayout.class) {
-                        ViewRadio = new WeakReference<>((View) textView.getParent());
+                        viewRadio = new WeakReference<>((View) textView.getParent());
                     }
                 } else if (hideItemVIP && "VIP会员".equals(content)) {
                     TextView textView = (TextView) param.thisObject;
@@ -396,8 +397,8 @@ final class CloudMusic {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 if (removeFuncRadio
-                        && ViewRadio != null
-                        && param.thisObject == ViewRadio.get()) {
+                        && viewRadio != null
+                        && param.thisObject == viewRadio.get()) {
                     param.args[0] = View.GONE;
                 } else if (hideDot && param.thisObject.getClass() == MessageBubbleView) {
                     param.args[0] = View.GONE;
