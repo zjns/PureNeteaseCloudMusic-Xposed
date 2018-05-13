@@ -75,7 +75,6 @@ final class HookInfo {
             String tempClassName = hookInfoCache.get("class_is_weekend");
             return findMethodExact(tempClassName, loader, tempMethodName);
         }
-        //log("need to find getMethodIsWeekend");
         String clazzName = getDateUtilClassName();
         if (clazzName == null) return null;
         for (Method method : findClass(clazzName, loader).getDeclaredMethods()) {
@@ -99,7 +98,6 @@ final class HookInfo {
             String tempClassName = hookInfoCache.get("class_user_group");
             return findMethodExact(tempClassName, loader, tempMethodName, String.class);
         }
-        //log("need to find getMethodUserGroup");
         String clazzName = getStateUtilClassName();
         if (clazzName == null) return null;
         for (Method method : findClass(clazzName, loader).getDeclaredMethods()) {
@@ -122,7 +120,6 @@ final class HookInfo {
             String tempClassName = hookInfoCache.get("class_channel");
             return findMethodExact(tempClassName, loader, tempMethodName, Context.class, String.class);
         }
-        //log("need to find getMethodChannel");
         Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.utils\\.[a-z]$");
         List<String> list = ClassHelper.getFilteredClasses(true, pattern);
         for (String clazzName : list) {
@@ -158,7 +155,6 @@ final class HookInfo {
                 }
             }
         }
-        //log("need to find getInnerFragmentMethod " + targetType);
         Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.fragment\\.[a-z]+\\$[1-9a-z]+$");
         List<String> list = ClassHelper.getFilteredClasses(true, pattern);
         for (String clazzName : list) {

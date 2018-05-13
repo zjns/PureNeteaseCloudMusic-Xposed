@@ -5,17 +5,14 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
 import android.widget.Toast;
 
 import java.io.File;
-import java.util.ArrayList;
 
 /**
  * Created by YiTry on 2018/1/27
@@ -39,7 +36,7 @@ public class MainActivity extends Activity {
                     .setCancelable(false)
                     .setMessage("模块未激活，请先激活模块并重启手机！")
                     .setPositiveButton("激活", (dialog, id) -> openXposed())
-                    .setNegativeButton("取消", (dialog, id) -> finish())
+                    .setNegativeButton("忽略", null)
                     .show();
         }
     }
@@ -47,12 +44,8 @@ public class MainActivity extends Activity {
     private void openXposed() {
         if (isXposedInstalled()) {
             Intent intent = new Intent("de.robv.android.xposed.installer.OPEN_SECTION");
-            PackageManager packageManager = getPackageManager();
-            if (packageManager == null) {
-                return;
-            }
-            if (packageManager.queryIntentActivities(intent, 0).isEmpty()) {
-                intent = packageManager.getLaunchIntentForPackage("de.robv.android.xposed.installer");
+            if (getPackageManager().queryIntentActivities(intent, 0).isEmpty()) {
+                intent = getPackageManager().getLaunchIntentForPackage("de.robv.android.xposed.installer");
             }
             if (intent != null) {
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -75,13 +68,12 @@ public class MainActivity extends Activity {
         }
     }
 
-    public static class PrefsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener, SharedPreferences.OnSharedPreferenceChangeListener {
+    public static class PrefsFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.xposed_prefs);
-            fixFolderPermission();
-            WorldReadableHelper.getInstance(getActivity());
+            setWorldReadable();
             SwitchPreference hideAppIcon = (SwitchPreference) getPreferenceScreen().findPreference("hide_icon");
             hideAppIcon.setOnPreferenceChangeListener(this);
         }
@@ -105,47 +97,18 @@ public class MainActivity extends Activity {
 
         @SuppressWarnings("ResultOfMethodCallIgnored")
         @SuppressLint("SetWorldReadable")
-        private void fixFolderPermission() {
-            File dataDir = new File(getActivity().getApplicationInfo().dataDir);
-            File prefsDir = new File(dataDir, "shared_prefs");
-            //File prefsFile = new File(prefsDir, getPreferenceManager().getSharedPreferencesName() + ".xml");
-            if (prefsDir.exists()) {
-                for (File file : new File[]{dataDir, prefsDir}) {
-                    file.setReadable(true, false);
-                    file.setExecutable(true, false);
-                }
+        private void setWorldReadable() {
+            File prefsDir = new File(getActivity().getApplicationInfo().dataDir, "shared_prefs");
+            File prefsFile = new File(prefsDir, getPreferenceManager().getSharedPreferencesName() + ".xml");
+            if (prefsFile.exists()) {
+                prefsFile.setReadable(true, false);
             }
-        }
-
-        @Override
-        public void onResume() {
-            super.onResume();
-            PreferenceManager.getDefaultSharedPreferences(getActivity())
-                    .registerOnSharedPreferenceChangeListener(this);
         }
 
         @Override
         public void onPause() {
             super.onPause();
-            PreferenceManager.getDefaultSharedPreferences(getActivity())
-                    .unregisterOnSharedPreferenceChangeListener(this);
-        }
-
-        @Override
-        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            ArrayList<String> keys = new ArrayList<>();
-            keys.add("remove_comment_ad");
-            keys.add("remove_comment_video");
-            keys.add("remove_comment_topic");
-            keys.add("remove_comment_concert_info");
-            keys.add("zero_point_video");
-            keys.add("enable_vip_feature");
-            keys.add("disable_sign_jump_to_small");
-            if (keys.contains(key)) {
-                Toast.makeText(getActivity(), R.string.work_right_now, Toast.LENGTH_SHORT).show();
-            } else if (!key.equals("hide_icon")) {
-                Toast.makeText(getActivity(), R.string.work_after_reload, Toast.LENGTH_SHORT).show();
-            }
+            setWorldReadable();
         }
     }
 }

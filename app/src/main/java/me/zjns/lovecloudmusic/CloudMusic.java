@@ -157,7 +157,6 @@ final class CloudMusic {
                 }
             });
         } else if (versionName.compareTo("4.3.5") >= 0) {
-            //if (!dontJump) return;
             Method userGroup = HookInfo.getMethodUserGroup();
             if (userGroup != null) {
                 hookMethod(userGroup, new XC_MethodHook() {
@@ -240,11 +239,6 @@ final class CloudMusic {
                 }
             }
         });
-        //findAndHookMethod(metaMV, "canDownloadMv", XC_MethodReplacement.returnConstant(true));
-        //findAndHookMethod(metaMV, "canPlayCanNotDownload", XC_MethodReplacement.returnConstant(false));
-        //findAndHookMethod(metaMV, "canPlayMv", XC_MethodReplacement.returnConstant(true));
-        //findAndHookMethod(metaMV, "isPayedFeeMv", XC_MethodReplacement.returnConstant(true));
-        //findAndHookMethod(metaMV, "unPayedFeeMv", XC_MethodReplacement.returnConstant(false));
     }
 
     private XC_MethodHook mVipFeatureFalseRet = new XC_MethodHook() {
@@ -316,7 +310,9 @@ final class CloudMusic {
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 if (param.args[0] == null) return;
                 String content = param.args[0].toString();
-                if (hideItemTicket && "优惠券".equals(content)) {
+                if ("优惠券".equals(content)) {
+                    loadPrefs();
+                    if (!hideItemTicket) return;
                     TextView textView = (TextView) param.thisObject;
                     Class<?> clazz = textView.getParent().getClass().getSuperclass();
                     if (clazz == FrameLayout.class) {
@@ -328,40 +324,52 @@ final class CloudMusic {
                     if (clazz == LinearLayout.class) {
                         viewRadio = new WeakReference<>((View) textView.getParent());
                     }
-                } else if (hideItemVIP && "VIP会员".equals(content)) {
+                } else if ("VIP会员".equals(content)) {
+                    loadPrefs();
+                    if (!hideItemVIP) return;
                     TextView textView = (TextView) param.thisObject;
                     Class<?> clazz = textView.getParent().getClass().getSuperclass();
                     if (clazz == FrameLayout.class) {
                         ((View) textView.getParent()).setVisibility(View.GONE);
                     }
-                } else if (hideItemShop && "商城".equals(content)) {
+                } else if ("商城".equals(content)) {
+                    loadPrefs();
+                    if (!hideItemShop) return;
                     TextView textView = (TextView) param.thisObject;
                     Class<?> clazz = textView.getParent().getClass().getSuperclass();
                     if (clazz == FrameLayout.class) {
                         ((View) textView.getParent()).setVisibility(View.GONE);
                     }
-                } else if (hideItemGame && content.contains("游戏推荐")) {
+                } else if (content.contains("游戏推荐")) {
+                    loadPrefs();
+                    if (!hideItemGame) return;
                     TextView textView = (TextView) param.thisObject;
                     Class<?> clazz = textView.getParent().getClass().getSuperclass();
                     if (clazz == LinearLayout.class) {
                         ViewGroup.LayoutParams params = ((LinearLayout) textView.getParent()).getLayoutParams();
                         params.height = 0;
                     }
-                } else if (hideItemFreeData && "在线听歌免流量".equals(content)) {
+                } else if ("在线听歌免流量".equals(content)) {
+                    loadPrefs();
+                    if (!hideItemFreeData) return;
                     TextView textView = (TextView) param.thisObject;
                     Class<?> clazz = textView.getParent().getClass().getSuperclass();
                     if (clazz == FrameLayout.class) {
                         ViewGroup.LayoutParams params = ((FrameLayout) textView.getParent()).getLayoutParams();
                         params.height = 0;
                     }
-                } else if (hideItemNearby && "附近的人".equals(content)) {
+                } else if ("附近的人".equals(content)) {
+                    loadPrefs();
+                    if (!hideItemNearby) return;
                     TextView textView = (TextView) param.thisObject;
                     Class<?> clazz = textView.getParent().getClass().getSuperclass();
                     if (clazz == FrameLayout.class) {
                         ViewGroup.LayoutParams params = ((FrameLayout) textView.getParent()).getLayoutParams();
                         params.height = 0;
                     }
-                } else if (dontJump && autoSign && "签到".equals(content)) {
+                } else if ("签到".equals(content)) {
+                    loadPrefs();
+                    if (!dontJump || !autoSign) return;
                     TextView textView = (TextView) param.thisObject;
                     if (textView.getParent().getClass() == LinearLayout.class) {
                         while (!textView.getText().toString().equals("已签到")) {
@@ -396,12 +404,17 @@ final class CloudMusic {
         findAndHookMethod(View.class, "setVisibility", Integer.TYPE, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (removeFuncRadio
-                        && viewRadio != null
+                if (viewRadio != null
                         && param.thisObject == viewRadio.get()) {
-                    param.args[0] = View.GONE;
-                } else if (hideDot && param.thisObject.getClass() == MessageBubbleView) {
-                    param.args[0] = View.GONE;
+                    loadPrefs();
+                    if (removeFuncRadio) {
+                        param.args[0] = View.GONE;
+                    }
+                } else if (param.thisObject.getClass() == MessageBubbleView) {
+                    loadPrefs();
+                    if (hideDot) {
+                        param.args[0] = View.GONE;
+                    }
                 }
             }
         });

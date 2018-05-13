@@ -5,15 +5,15 @@ android {
     compileSdkVersion 27
     defaultConfig {
         applicationId "me.zjns.lovecloudmusic"
-        minSdkVersion 19
-        targetSdkVersion 27
-        versionCode 8
-        versionName "1.7"
+        minSdkVersion 14
+        targetSdkVersion 19
+        versionCode 9
+        versionName "1.8"
         archivesBaseName = "Pure163Music-Xposed_v${versionName}"
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             zipAlignEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
