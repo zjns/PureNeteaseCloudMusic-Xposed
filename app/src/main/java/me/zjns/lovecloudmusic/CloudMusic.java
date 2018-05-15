@@ -1,5 +1,6 @@
 package me.zjns.lovecloudmusic;
 
+import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -19,9 +20,9 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 import static de.robv.android.xposed.XposedBridge.hookMethod;
 import static de.robv.android.xposed.XposedBridge.log;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
+import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.findMethodExact;
 
 final class CloudMusic {
     private String versionName;
@@ -224,58 +225,48 @@ final class CloudMusic {
                 }
             }
         });
-        Method getPoint;
-        try {
-            getPoint = findMethodExact("com.netease.cloudmusic.meta.virtual.MVUrlInfo", loader, "getPoint");
-        } catch (Throwable t) {
-            getPoint = findMethodExact("com.netease.cloudmusic.meta.virtual.VideoInfo", loader, "getPoint");
-        }
-        hookMethod(getPoint, new XC_MethodHook() {
+        findAndHookMethod(metaMV, "isFreePointCurBitMvDownload", new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 loadPrefs();
                 if (zeroPointDLMV) {
-                    param.setResult(0);
+                    param.setResult(true);
                 }
             }
         });
     }
 
-    private XC_MethodHook mVipFeatureFalseRet = new XC_MethodHook() {
-        @Override
-        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-            loadPrefs();
-            if (enableVipFeature && !isVipPro()) {
-                param.setResult(false);
-            }
-        }
-    };
-
     private void hookVIPTheme() {
-        Class<?> ThemeInfo = findClass("com.netease.cloudmusic.theme.core.ThemeInfo", loader);
-        if (versionName.startsWith("3")) {
-            try {
-                findAndHookMethod(ThemeInfo, "m", mVipFeatureFalseRet);
-                findAndHookMethod(ThemeInfo, "q", mVipFeatureFalseRet);
-            } catch (Throwable t) {
-                log(t);
-            }
-        } else {
-            try {
-                findAndHookMethod(ThemeInfo, "o", mVipFeatureFalseRet);
-                findAndHookMethod(ThemeInfo, "s", mVipFeatureFalseRet);
-            } catch (Throwable t) {
-                log(t);
-            }
-        }
+        String ThemeDetailActivity = "com.netease.cloudmusic.activity.ThemeDetailActivity";
+        String ThemeDetailActivity$1 = ThemeDetailActivity + "$1";
+        findAndHookConstructor(ThemeDetailActivity$1, loader,
+                ThemeDetailActivity, Integer.TYPE, Boolean.TYPE, Boolean.TYPE, Integer.TYPE, Intent.class, String.class,
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        loadPrefs();
+                        if (!enableVipFeature || isVipPro()) return;
+                        param.args[2] = false;
+                        param.args[3] = false;
+                    }
+                });
     }
 
     private void hookLyricTemplate() {
+        if (versionName.compareTo("4.1.1") < 0) return;
         try {
             Method e = Utils.findMethodByExactParameters(
                     findClass("com.netease.cloudmusic.module.lyrictemplate.d", loader),
                     "e", Boolean.TYPE);
-            hookMethod(e, mVipFeatureFalseRet);
+            hookMethod(e, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                    loadPrefs();
+                    if (enableVipFeature && !isVipPro()) {
+                        param.setResult(false);
+                    }
+                }
+            });
         } catch (Throwable t) {
             log(t);
         }
