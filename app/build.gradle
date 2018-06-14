@@ -7,8 +7,8 @@ android {
         applicationId "me.zjns.lovecloudmusic"
         minSdkVersion 14
         targetSdkVersion 19
-        versionCode 10
-        versionName "2.0"
+        versionCode 11
+        versionName "2.1"
         archivesBaseName = "Pure163Music-Xposed_v${versionName}"
     }
     buildTypes {

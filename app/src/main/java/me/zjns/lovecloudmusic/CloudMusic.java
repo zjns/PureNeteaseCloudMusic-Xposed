@@ -1,6 +1,9 @@
 package me.zjns.lovecloudmusic;
 
 import android.content.Intent;
+import android.os.BaseBundle;
+import android.os.Build;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -25,7 +28,6 @@ import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 
 final class CloudMusic {
-    private String versionName;
     private boolean dontJump;
     private boolean autoSign;
     private boolean convertToPlay;
@@ -46,9 +48,10 @@ final class CloudMusic {
     private boolean hideItemFreeData;
     private boolean hideItemNearby;
     private boolean hideItemTicket;
-    private Boolean mIsVipPro = null;
+    private Boolean mIsVipPro = false;
+    private static String versionName;
     private static ClassLoader loader;
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private static XSharedPreferences mSharedPrefs;
     private static CloudMusic mInstance;
     private WeakReference<View> viewRadio = null;
@@ -65,9 +68,10 @@ final class CloudMusic {
 
     void hookHandler(LoadPackageParam lpparam) throws Throwable {
         mSharedPrefs = new XSharedPreferences(HookInit.MODULE_PACKAGE_NAME);
-        HookInfo.setClassLoader(lpparam.classLoader);
-        loader = lpparam.classLoader;
         versionName = Utils.getPackageVersionName(HookInit.HOOK_PACKAGE_NAME);
+        HookInfo.setClassLoader(lpparam.classLoader);
+        HookInfo.setKeys(versionName);
+        loader = lpparam.classLoader;
         loadPrefs();
         if (!mSharedPrefs.getBoolean("enable_all_functions", true)) return;
 
@@ -80,6 +84,7 @@ final class CloudMusic {
         hookVideoPoint();
         hookVIPTheme();
         hookLyricTemplate();
+        removeSplashAd();
 
         HookInfo.saveHookInfo();
     }
@@ -117,6 +122,19 @@ final class CloudMusic {
         } catch (Throwable t) {
             return null;
         }
+    }
+
+    private void removeSplashAd() {
+        if (versionName.compareTo("5.2.0") < 0 || !convertToPlay) return;
+        Class<?> BundleClass = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? BaseBundle.class : Bundle.class;
+        findAndHookMethod(BundleClass, "getSerializable", String.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                if (param.args[0].toString().equals("adInfo")) {
+                    param.setResult(null);
+                }
+            }
+        });
     }
 
     private void convertToPlayVersion() {
@@ -189,7 +207,7 @@ final class CloudMusic {
         int type = (int) callMethod(obj, "getType");
         return type == 5 && removeConcertInfo ||
                 type == 6 && removeTopic ||
-                type == 9 && removeAd ||
+                (type == 9 || type == 13) && removeAd ||
                 type == 11 && removeVideo;
     }
 
@@ -315,7 +333,7 @@ final class CloudMusic {
                     if (clazz == LinearLayout.class) {
                         viewRadio = new WeakReference<>((View) textView.getParent());
                     }
-                } else if ("VIP会员".equals(content)) {
+                } else if ("VIP会员".equals(content) || "会员中心".equals(content)) {
                     loadPrefs();
                     if (!hideItemVIP) return;
                     TextView textView = (TextView) param.thisObject;
@@ -335,11 +353,8 @@ final class CloudMusic {
                     loadPrefs();
                     if (!hideItemGame) return;
                     TextView textView = (TextView) param.thisObject;
-                    Class<?> clazz = textView.getParent().getClass().getSuperclass();
-                    if (clazz == LinearLayout.class) {
-                        ViewGroup.LayoutParams params = ((LinearLayout) textView.getParent()).getLayoutParams();
-                        params.height = 0;
-                    }
+                    ViewGroup.LayoutParams params = ((LinearLayout) textView.getParent()).getLayoutParams();
+                    params.height = 0;
                 } else if ("在线听歌免流量".equals(content)) {
                     loadPrefs();
                     if (!hideItemFreeData) return;

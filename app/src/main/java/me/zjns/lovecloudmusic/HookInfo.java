@@ -26,6 +26,7 @@ import static de.robv.android.xposed.XposedHelpers.findMethodExact;
 final class HookInfo {
     private static ClassLoader loader;
     private static boolean needUpdate = true;
+    private static List<String> keys = new ArrayList<>();
     private static HashMap<String, String> hookInfoCache = new HashMap<>();
 
     static {
@@ -36,6 +37,19 @@ final class HookInfo {
         loader = classLoader;
     }
 
+    static void setKeys(String version) {
+        keys.clear();
+        keys.add("method_channel");
+        keys.add("class_Banner");
+        if (version.compareTo("4.2.1") > 0) {
+            keys.add("class_CommentListEntry");
+            if (version.compareTo("4.3.5") >= 0) {
+                keys.add("method_is_weekend");
+                keys.add("method_user_group");
+            }
+        }
+    }
+
     private static void readHookInfo() {
         try {
             Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
@@ -44,8 +58,11 @@ final class HookInfo {
             if (hookInfoFile.isFile() && hookInfoFile.canRead()) {
                 ObjectInputStream in = new ObjectInputStream(new FileInputStream(hookInfoFile));
                 if (in.readLong() == lastUpdateTime) {
-                    needUpdate = false;
-                    hookInfoCache = (HashMap<String, String>) in.readObject();
+                    HashMap<String, String> map = (HashMap<String, String>) in.readObject();
+                    if (map.keySet().containsAll(keys)) {
+                        hookInfoCache = map;
+                        needUpdate = false;
+                    }
                 }
             }
         } catch (Exception e) {
@@ -124,13 +141,17 @@ final class HookInfo {
         List<String> list = ClassHelper.getFilteredClasses(true, pattern);
         for (String clazzName : list) {
             Class<?> clazz = findClass(clazzName, loader);
-            if (clazz.getDeclaredMethods().length == 3) {
+            Field[] fields = clazz.getDeclaredFields();
+            if (fields.length == 1
+                    && fields[0].getType() == String.class
+                    && Modifier.isPrivate(fields[0].getModifiers())
+                    && Modifier.isStatic(fields[0].getModifiers())) {
                 for (Method method : clazz.getDeclaredMethods()) {
                     if (method.getReturnType() == String.class
                             && method.getParameterTypes().length == 2
                             && method.getParameterTypes()[0] == Context.class
                             && method.getParameterTypes()[1] == String.class
-                            && Modifier.isPrivate(method.getModifiers())
+                            && Modifier.isPublic(method.getModifiers())
                             && Modifier.isStatic(method.getModifiers())) {
                         if (!hookInfoCache.containsKey("method_channel")) {
                             hookInfoCache.put("method_channel", method.getName());
@@ -155,7 +176,7 @@ final class HookInfo {
                 }
             }
         }
-        Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.fragment\\.[a-z]+\\$[1-9a-z]+$");
+        Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.fragment\\.[a-z]+\\$[a-z1-9]+$");
         List<String> list = ClassHelper.getFilteredClasses(true, pattern);
         for (String clazzName : list) {
             Class<?> clazz = findClass(clazzName, loader);
