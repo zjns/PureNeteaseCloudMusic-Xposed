@@ -19,7 +19,7 @@ final class Utils {
     static Context getPackageContext(String packageName) throws PackageManager.NameNotFoundException {
         Object currentThread = callStaticMethod(findClass("android.app.ActivityThread", null), "currentActivityThread");
         Context systemContext = (Context) callMethod(currentThread, "getSystemContext");
-        return systemContext.createPackageContext(packageName, Context.CONTEXT_RESTRICTED);
+        return systemContext.createPackageContext(packageName, Context.CONTEXT_IGNORE_SECURITY);
     }
 
     @SuppressWarnings("all")
