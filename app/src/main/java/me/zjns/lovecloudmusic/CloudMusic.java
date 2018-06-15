@@ -26,6 +26,7 @@ import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
+import static de.robv.android.xposed.XposedHelpers.getIntField;
 
 final class CloudMusic {
     private boolean dontJump;
@@ -38,6 +39,7 @@ final class CloudMusic {
     private boolean zeroPointDLMV;
     private boolean enableVipFeature;
     private boolean removeHomeBannerAd;
+    private boolean removeVideoFlowAd;
     private boolean removeFuncDynamic;
     private boolean removeFuncVideo;
     private boolean removeFuncRadio;
@@ -48,11 +50,11 @@ final class CloudMusic {
     private boolean hideItemFreeData;
     private boolean hideItemNearby;
     private boolean hideItemTicket;
-    private Boolean mIsVipPro = false;
+    private Boolean mIsVipPro = null;
     private static String versionName;
     private static ClassLoader loader;
-    private static final boolean DEBUG = true;
-    private static XSharedPreferences mSharedPrefs;
+    private static final boolean DEBUG = false;
+    private static WeakReference<XSharedPreferences> mSharedPrefs = new WeakReference<>(null);
     private static CloudMusic mInstance;
     private WeakReference<View> viewRadio = null;
 
@@ -67,18 +69,19 @@ final class CloudMusic {
     }
 
     void hookHandler(LoadPackageParam lpparam) throws Throwable {
-        mSharedPrefs = new XSharedPreferences(HookInit.MODULE_PACKAGE_NAME);
         versionName = Utils.getPackageVersionName(HookInit.HOOK_PACKAGE_NAME);
         HookInfo.setClassLoader(lpparam.classLoader);
         HookInfo.setKeys(versionName);
+        HookInfo.readHookInfo();
         loader = lpparam.classLoader;
         loadPrefs();
-        if (!mSharedPrefs.getBoolean("enable_all_functions", true)) return;
+        if (!mSharedPrefs.get().getBoolean("enable_all_functions", true)) return;
 
         convertToPlayVersion();
         disableSignJumpToSmall();
         removeCommentAd();
         removeBannerAd();
+        removeVideoFlowAd();
         hideSideBarItems();
         hideUIFuncItems();
         hookVideoPoint();
@@ -89,28 +92,39 @@ final class CloudMusic {
         HookInfo.saveHookInfo();
     }
 
+    private XSharedPreferences getSharedPrefs() {
+        XSharedPreferences prefs = mSharedPrefs.get();
+        if (prefs == null) {
+            prefs = new XSharedPreferences(HookInit.MODULE_PACKAGE_NAME);
+            mSharedPrefs = new WeakReference<>(prefs);
+        }
+        return prefs;
+    }
+
     private void loadPrefs() {
-        mSharedPrefs.reload();
-        dontJump = mSharedPrefs.getBoolean("disable_sign_jump_to_small", false);
-        autoSign = mSharedPrefs.getBoolean("auto_sign", false);
-        convertToPlay = mSharedPrefs.getBoolean("convert_to_play", false);
-        removeAd = mSharedPrefs.getBoolean("remove_comment_ad", false);
-        removeVideo = mSharedPrefs.getBoolean("remove_comment_video", false);
-        removeTopic = mSharedPrefs.getBoolean("remove_comment_topic", false);
-        removeConcertInfo = mSharedPrefs.getBoolean("remove_comment_concert_info", false);
-        zeroPointDLMV = mSharedPrefs.getBoolean("zero_point_video", false);
-        enableVipFeature = mSharedPrefs.getBoolean("enable_vip_feature", false);
-        removeHomeBannerAd = mSharedPrefs.getBoolean("remove_home_banner_ad", false);
-        removeFuncDynamic = mSharedPrefs.getBoolean("remove_func_dynamic", false);
-        removeFuncVideo = mSharedPrefs.getBoolean("remove_func_video", false);
-        removeFuncRadio = mSharedPrefs.getBoolean("remove_func_radio", false);
-        hideDot = mSharedPrefs.getBoolean("hide_dot", false);
-        hideItemVIP = mSharedPrefs.getBoolean("hide_item_vip", false);
-        hideItemShop = mSharedPrefs.getBoolean("hide_item_shop", false);
-        hideItemGame = mSharedPrefs.getBoolean("hide_item_game", false);
-        hideItemFreeData = mSharedPrefs.getBoolean("hide_item_free_data", false);
-        hideItemNearby = mSharedPrefs.getBoolean("hide_item_nearby", false);
-        hideItemTicket = mSharedPrefs.getBoolean("hide_item_ticket", false);
+        XSharedPreferences prefs = getSharedPrefs();
+        prefs.reload();
+        dontJump = prefs.getBoolean("disable_sign_jump_to_small", false);
+        autoSign = prefs.getBoolean("auto_sign", false);
+        convertToPlay = prefs.getBoolean("convert_to_play", false);
+        removeAd = prefs.getBoolean("remove_comment_ad", false);
+        removeVideo = prefs.getBoolean("remove_comment_video", false);
+        removeTopic = prefs.getBoolean("remove_comment_topic", false);
+        removeConcertInfo = prefs.getBoolean("remove_comment_concert_info", false);
+        zeroPointDLMV = prefs.getBoolean("zero_point_video", false);
+        enableVipFeature = prefs.getBoolean("enable_vip_feature", false);
+        removeHomeBannerAd = prefs.getBoolean("remove_home_banner_ad", false);
+        removeVideoFlowAd = prefs.getBoolean("remove_video_flow_ad", false);
+        removeFuncDynamic = prefs.getBoolean("remove_func_dynamic", false);
+        removeFuncVideo = prefs.getBoolean("remove_func_video", false);
+        removeFuncRadio = prefs.getBoolean("remove_func_radio", false);
+        hideDot = prefs.getBoolean("hide_dot", false);
+        hideItemVIP = prefs.getBoolean("hide_item_vip", false);
+        hideItemShop = prefs.getBoolean("hide_item_shop", false);
+        hideItemGame = prefs.getBoolean("hide_item_game", false);
+        hideItemFreeData = prefs.getBoolean("hide_item_free_data", false);
+        hideItemNearby = prefs.getBoolean("hide_item_nearby", false);
+        hideItemTicket = prefs.getBoolean("hide_item_ticket", false);
     }
 
     @SuppressWarnings("all")
@@ -313,6 +327,27 @@ final class CloudMusic {
         });
     }
 
+    private void removeVideoFlowAd() {
+        if (versionName.compareTo("5.3.0") < 0) return;
+        Method getVideos = HookInfo.getFragmentMethod("VideoTimelineData");
+        hookMethod(getVideos, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                loadPrefs();
+                if (!removeVideoFlowAd) return;
+                List<?> list = (List) param.getResult();
+                if (list == null || list.isEmpty()) return;
+                Iterator<?> it = list.iterator();
+                while (it.hasNext()) {
+                    int type = getIntField(it.next(), "type");
+                    if (type == 19 || type == 23 || type == 24) {
+                        it.remove();
+                    }
+                }
+            }
+        });
+    }
+
     private void hideSideBarItems() {
         findAndHookMethod(TextView.class, "setText", CharSequence.class, new XC_MethodHook() {
             @Override
@@ -427,6 +462,7 @@ final class CloudMusic {
     }
 
     private boolean isVipPro() {
+        if (versionName.compareTo("5.3.0") >= 0) return false;
         if (mIsVipPro != null) return mIsVipPro;
         Object profile = HookInfo.getProfile();
         return mIsVipPro = profile != null && (boolean) callMethod(profile, "isVipPro");
