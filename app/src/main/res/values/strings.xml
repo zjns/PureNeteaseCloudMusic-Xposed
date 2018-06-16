@@ -30,6 +30,7 @@
     <string name="enable_all_functions_title">启用模块</string>
     <string name="auto_sign_title">自动签到</string>
     <string name="remove_video_flow_ad_title">移除视频流广告</string>
+    <string name="remove_search_banner_ad_title">移除搜索界面Banner广告</string>
     <string name="work_right_now">更改立即生效</string>
     <string name="work_after_reload">更改在结束软件进程或者重启后生效</string>
 </resources>

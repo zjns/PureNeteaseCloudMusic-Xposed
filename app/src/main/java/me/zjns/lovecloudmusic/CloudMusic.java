@@ -1,9 +1,11 @@
 package me.zjns.lovecloudmusic;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.BaseBundle;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -40,6 +42,7 @@ final class CloudMusic {
     private boolean enableVipFeature;
     private boolean removeHomeBannerAd;
     private boolean removeVideoFlowAd;
+    private boolean removeSearchBanner;
     private boolean removeFuncDynamic;
     private boolean removeFuncVideo;
     private boolean removeFuncRadio;
@@ -82,6 +85,7 @@ final class CloudMusic {
         removeCommentAd();
         removeBannerAd();
         removeVideoFlowAd();
+        removeSearchBannerAd();
         hideSideBarItems();
         hideUIFuncItems();
         hookVideoPoint();
@@ -115,6 +119,7 @@ final class CloudMusic {
         enableVipFeature = prefs.getBoolean("enable_vip_feature", false);
         removeHomeBannerAd = prefs.getBoolean("remove_home_banner_ad", false);
         removeVideoFlowAd = prefs.getBoolean("remove_video_flow_ad", false);
+        removeSearchBanner = prefs.getBoolean("remove_search_banner_ad", false);
         removeFuncDynamic = prefs.getBoolean("remove_func_dynamic", false);
         removeFuncVideo = prefs.getBoolean("remove_func_video", false);
         removeFuncRadio = prefs.getBoolean("remove_func_radio", false);
@@ -147,6 +152,18 @@ final class CloudMusic {
                 if (param.args[0].toString().equals("adInfo")) {
                     param.setResult(null);
                 }
+            }
+        });
+    }
+
+    private void removeSearchBannerAd() {
+        findAndHookConstructor("com.netease.cloudmusic.ui.AdBannerView", loader, Context.class, AttributeSet.class, Integer.TYPE, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                loadPrefs();
+                if (!removeSearchBanner) return;
+                View view = (View) param.thisObject;
+                view.setVisibility(View.GONE);
             }
         });
     }
