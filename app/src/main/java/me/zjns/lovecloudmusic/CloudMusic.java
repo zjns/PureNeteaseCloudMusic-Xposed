@@ -25,6 +25,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 import static de.robv.android.xposed.XposedBridge.hookMethod;
 import static de.robv.android.xposed.XposedBridge.log;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
+import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
@@ -157,15 +158,16 @@ final class CloudMusic {
     }
 
     private void removeSearchBannerAd() {
-        findAndHookConstructor("com.netease.cloudmusic.ui.AdBannerView", loader, Context.class, AttributeSet.class, Integer.TYPE, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                loadPrefs();
-                if (!removeSearchBanner) return;
-                View view = (View) param.thisObject;
-                view.setVisibility(View.GONE);
-            }
-        });
+        findAndHookConstructor("com.netease.cloudmusic.ui.AdBannerView", loader,
+                Context.class, AttributeSet.class, Integer.TYPE, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        loadPrefs();
+                        if (!removeSearchBanner) return;
+                        View view = (View) param.thisObject;
+                        view.setVisibility(View.GONE);
+                    }
+                });
     }
 
     private void convertToPlayVersion() {
@@ -479,8 +481,12 @@ final class CloudMusic {
     }
 
     private boolean isVipPro() {
-        if (versionName.compareTo("5.3.0") >= 0) return false;
         if (mIsVipPro != null) return mIsVipPro;
+        if (versionName.compareTo("5.3.0") >= 0) {
+            Class<?> UserPrivilege = findClass("com.netease.cloudmusic.meta.virtual.UserPrivilege", loader);
+            String vipType = callStaticMethod(UserPrivilege, "getLogVipType").toString();
+            return mIsVipPro = "100".equals(vipType.trim());
+        }
         Object profile = HookInfo.getProfile();
         return mIsVipPro = profile != null && (boolean) callMethod(profile, "isVipPro");
     }
