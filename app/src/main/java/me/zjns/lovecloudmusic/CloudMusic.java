@@ -368,77 +368,99 @@ final class CloudMusic {
     }
 
     private void hideSideBarItems() {
-        findAndHookMethod(TextView.class, "setText", CharSequence.class, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                if (param.args[0] == null) return;
-                String content = param.args[0].toString();
-                if ("优惠券".equals(content)) {
-                    loadPrefs();
-                    if (!hideItemTicket) return;
-                    TextView textView = (TextView) param.thisObject;
-                    Class<?> clazz = textView.getParent().getClass().getSuperclass();
-                    if (clazz == FrameLayout.class) {
-                        ((View) textView.getParent()).setVisibility(View.GONE);
-                    }
-                } else if ("电台".equals(content)) {
-                    TextView textView = (TextView) param.thisObject;
-                    Class<?> clazz = textView.getParent().getClass().getSuperclass();
-                    if (clazz == LinearLayout.class) {
-                        viewRadio = new WeakReference<>((View) textView.getParent());
-                    }
-                } else if ("VIP会员".equals(content) || "会员中心".equals(content)) {
-                    loadPrefs();
-                    if (!hideItemVIP) return;
-                    TextView textView = (TextView) param.thisObject;
-                    Class<?> clazz = textView.getParent().getClass().getSuperclass();
-                    if (clazz == FrameLayout.class) {
-                        ((View) textView.getParent()).setVisibility(View.GONE);
-                    }
-                } else if ("商城".equals(content)) {
-                    loadPrefs();
-                    if (!hideItemShop) return;
-                    TextView textView = (TextView) param.thisObject;
-                    Class<?> clazz = textView.getParent().getClass().getSuperclass();
-                    if (clazz == FrameLayout.class) {
-                        ((View) textView.getParent()).setVisibility(View.GONE);
-                    }
-                } else if (content.contains("游戏推荐")) {
-                    loadPrefs();
-                    if (!hideItemGame) return;
-                    TextView textView = (TextView) param.thisObject;
-                    ViewGroup.LayoutParams params = ((LinearLayout) textView.getParent()).getLayoutParams();
-                    params.height = 0;
-                } else if ("在线听歌免流量".equals(content)) {
-                    loadPrefs();
-                    if (!hideItemFreeData) return;
-                    TextView textView = (TextView) param.thisObject;
-                    Class<?> clazz = textView.getParent().getClass().getSuperclass();
-                    if (clazz == FrameLayout.class) {
-                        ViewGroup.LayoutParams params = ((FrameLayout) textView.getParent()).getLayoutParams();
-                        params.height = 0;
-                    }
-                } else if ("附近的人".equals(content)) {
-                    loadPrefs();
-                    if (!hideItemNearby) return;
-                    TextView textView = (TextView) param.thisObject;
-                    Class<?> clazz = textView.getParent().getClass().getSuperclass();
-                    if (clazz == FrameLayout.class) {
-                        ViewGroup.LayoutParams params = ((FrameLayout) textView.getParent()).getLayoutParams();
-                        params.height = 0;
-                    }
-                } else if ("签到".equals(content)) {
-                    loadPrefs();
-                    if (!dontJump || !autoSign) return;
-                    TextView textView = (TextView) param.thisObject;
-                    if (textView.getParent().getClass() == LinearLayout.class) {
-                        while (!textView.getText().toString().equals("已签到")) {
-                            textView.performClick();
+        findAndHookMethod(TextView.class, "setText",
+                CharSequence.class, TextView.BufferType.class, Boolean.TYPE, Integer.TYPE,
+                new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        if (param.args[0] == null) return;
+                        String content = param.args[0].toString();
+                        if ("优惠券".equals(content)) {
+                            loadPrefs();
+                            if (!hideItemTicket) return;
+                            TextView textView = (TextView) param.thisObject;
+                            View parent = (View) textView.getParent();
+                            if (parent != null) {
+                                Class<?> clazz = parent.getClass().getSuperclass();
+                                if (clazz == FrameLayout.class) {
+                                    parent.setVisibility(View.GONE);
+                                }
+                            }
+                        } else if ("电台".equals(content)) {
+                            TextView textView = (TextView) param.thisObject;
+                            View parent = (View) textView.getParent();
+                            if (parent != null) {
+                                Class<?> clazz = parent.getClass().getSuperclass();
+                                if (clazz == LinearLayout.class) {
+                                    viewRadio = new WeakReference<>(parent);
+                                }
+                            }
+                        } else if ("VIP会员".equals(content) || "会员中心".equals(content) || "我的会员".equals(content)) {
+                            loadPrefs();
+                            if (!hideItemVIP) return;
+                            TextView textView = (TextView) param.thisObject;
+                            View parent = (View) textView.getParent();
+                            if (parent != null) {
+                                Class<?> clazz = parent.getClass().getSuperclass();
+                                if (clazz == FrameLayout.class) {
+                                    parent.setVisibility(View.GONE);
+                                }
+                            }
+                        } else if ("商城".equals(content)) {
+                            loadPrefs();
+                            if (!hideItemShop) return;
+                            TextView textView = (TextView) param.thisObject;
+                            View parent = (View) textView.getParent();
+                            if (parent != null) {
+                                Class<?> clazz = parent.getClass().getSuperclass();
+                                if (clazz == FrameLayout.class) {
+                                    parent.setVisibility(View.GONE);
+                                }
+                            }
+                        } else if (content.contains("游戏推荐")) {
+                            loadPrefs();
+                            if (!hideItemGame) return;
+                            TextView textView = (TextView) param.thisObject;
+                            View parent = (View) textView.getParent();
+                            if (parent != null) {
+                                ViewGroup.LayoutParams params = parent.getLayoutParams();
+                                params.height = 0;
+                            }
+                        } else if ("在线听歌免流量".equals(content)) {
+                            loadPrefs();
+                            if (!hideItemFreeData) return;
+                            TextView textView = (TextView) param.thisObject;
+                            View parent = (View) textView.getParent();
+                            if (parent != null) {
+                                Class<?> clazz = parent.getClass().getSuperclass();
+                                if (clazz == FrameLayout.class) {
+                                    ViewGroup.LayoutParams params = parent.getLayoutParams();
+                                    params.height = 0;
+                                }
+                            }
+                        } else if ("附近的人".equals(content)) {
+                            loadPrefs();
+                            if (!hideItemNearby) return;
+                            TextView textView = (TextView) param.thisObject;
+                            View parent = (View) textView.getParent();
+                            if (parent != null) {
+                                Class<?> clazz = parent.getClass().getSuperclass();
+                                if (clazz == FrameLayout.class) {
+                                    ViewGroup.LayoutParams params = parent.getLayoutParams();
+                                    params.height = 0;
+                                }
+                            }
+                        } else if ("签到".equals(content)) {
+                            loadPrefs();
+                            if (!dontJump || !autoSign) return;
+                            TextView textView = (TextView) param.thisObject;
+                            View parent = (View) textView.getParent();
+                            if (parent != null && parent.getClass() == LinearLayout.class) {
+                                textView.performClick();
+                            }
                         }
                     }
-                }
-            }
-        });
+                });
     }
 
     private void hideUIFuncItems() {
