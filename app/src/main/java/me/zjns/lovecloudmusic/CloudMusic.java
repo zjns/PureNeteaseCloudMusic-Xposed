@@ -22,14 +22,14 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
-import static de.robv.android.xposed.XposedBridge.hookMethod;
 import static de.robv.android.xposed.XposedBridge.log;
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
-import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
-import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getIntField;
+import static me.zjns.lovecloudmusic.Utils.findAndHookConstructor;
+import static me.zjns.lovecloudmusic.Utils.findAndHookMethod;
+import static me.zjns.lovecloudmusic.Utils.hookMethod;
 
 final class CloudMusic {
     private boolean dontJump;
@@ -506,8 +506,8 @@ final class CloudMusic {
         if (mIsVipPro != null) return mIsVipPro;
         if (versionName.compareTo("5.3.0") >= 0) {
             Class<?> UserPrivilege = findClass("com.netease.cloudmusic.meta.virtual.UserPrivilege", loader);
-            String vipType = callStaticMethod(UserPrivilege, "getLogVipType").toString();
-            return mIsVipPro = "100".equals(vipType.trim());
+            String vipType = callStaticMethod(UserPrivilege, "getLogVipType").toString().trim();
+            return mIsVipPro = "100".equals(vipType);
         }
         Object profile = HookInfo.getProfile();
         return mIsVipPro = profile != null && (boolean) callMethod(profile, "isVipPro");
