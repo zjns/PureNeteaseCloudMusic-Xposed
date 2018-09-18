@@ -14,7 +14,6 @@
     <string name="enable_vip_feature_title">启用部分会员特权</string>
     <string name="enable_vip_feature_summary">免费使用会员主题及歌词图片功能</string>
     <string name="zero_point_download_video_title">免积分下载超清MV</string>
-    <string name="remove_home_banner_ad_title">移除主界面Banner广告</string>
     <string name="category_funcpart_title">功能分区</string>
     <string name="remove_func_dynamic_title">隐藏动态分区</string>
     <string name="remove_func_video_title">隐藏视频分区</string>
@@ -27,6 +26,7 @@
     <string name="hide_item_free_data_title">隐藏在线听歌免流量</string>
     <string name="hide_item_nearby_title">隐藏附近的人</string>
     <string name="hide_item_ticket_title">隐藏优惠券</string>
+    <string name="hide_item_baby_title">隐藏亲子频道</string>
     <string name="enable_all_functions_title">启用模块</string>
     <string name="auto_sign_title">自动签到</string>
     <string name="remove_video_flow_ad_title">移除视频流广告</string>

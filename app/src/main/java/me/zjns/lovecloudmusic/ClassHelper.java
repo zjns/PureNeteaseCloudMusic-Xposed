@@ -2,6 +2,7 @@ package me.zjns.lovecloudmusic;
 
 import android.content.pm.PackageManager;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,6 +15,7 @@ import java.util.regex.Pattern;
  */
 
 final class ClassHelper {
+    private static WeakReference<List<String>> allClasses = new WeakReference<>(null);
 
     static List<String> getFilteredClasses(boolean useCache, Pattern pattern) {
         try {
@@ -24,7 +26,7 @@ final class ClassHelper {
     }
 
     private static List<String> getFilteredClasses(boolean useCache, Pattern pattern, Comparator<String> comparator) throws PackageManager.NameNotFoundException {
-        List<String> list = filterList(MultiDexHelper.getAllClasses(useCache), pattern);
+        List<String> list = filterList(getAllClasses(useCache), pattern);
         Collections.sort(list, comparator);
         return list;
     }
@@ -37,5 +39,14 @@ final class ClassHelper {
             }
         }
         return filteredList;
+    }
+
+    private static List<String> getAllClasses(boolean useCache) throws PackageManager.NameNotFoundException {
+        List<String> list = allClasses.get();
+        if (list == null) {
+            list = MultiDexHelper.getAllClasses(useCache);
+            allClasses = new WeakReference<>(list);
+        }
+        return list;
     }
 }

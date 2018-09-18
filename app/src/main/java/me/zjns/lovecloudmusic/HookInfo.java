@@ -36,7 +36,6 @@ final class HookInfo {
     static void setKeys(String version) {
         keys.clear();
         keys.add("method_channel");
-        keys.add("class_Banner");
         if (version.compareTo("4.2.1") > 0) {
             keys.add("class_CommentListEntry");
             if (version.compareTo("4.3.5") >= 0) {
@@ -53,8 +52,7 @@ final class HookInfo {
         try {
             Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
             long lastUpdateTime = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).lastUpdateTime;
-            Context selfContext = Utils.getPackageContext(HookInit.MODULE_PACKAGE_NAME);
-            File hookInfoFile = new File(selfContext.getCacheDir(), "HookInfo.dat");
+            File hookInfoFile = new File(context.getCacheDir(), "HookInfo.dat");
             if (hookInfoFile.isFile() && hookInfoFile.canRead()) {
                 ObjectInputStream in = new ObjectInputStream(new FileInputStream(hookInfoFile));
                 if (in.readLong() == lastUpdateTime) {
@@ -75,8 +73,7 @@ final class HookInfo {
         try {
             Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
             long lastUpdateTime = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).lastUpdateTime;
-            Context selfContext = Utils.getPackageContext(HookInit.MODULE_PACKAGE_NAME);
-            File hookInfoFile = new File(selfContext.getCacheDir(), "HookInfo.dat");
+            File hookInfoFile = new File(context.getCacheDir(), "HookInfo.dat");
             ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(hookInfoFile));
             out.writeLong(lastUpdateTime);
             out.writeObject(hookInfoCache);
@@ -96,7 +93,7 @@ final class HookInfo {
         String clazzName = getDateUtilClassName();
         if (clazzName == null) return null;
         for (Method method : findClass(clazzName, loader).getDeclaredMethods()) {
-            if (method.getReturnType() == boolean.class
+            if (method.getReturnType() == Boolean.TYPE
                     && method.getParameterTypes().length == 0
                     && Modifier.isPublic(method.getModifiers())
                     && Modifier.isStatic(method.getModifiers())) {
@@ -184,7 +181,7 @@ final class HookInfo {
                     && m.getParameterTypes().length == 3
                     && m.getParameterTypes()[0] == Context.class
                     && m.getParameterTypes()[1] == String.class
-                    && m.getParameterTypes()[2] == boolean.class) {
+                    && m.getParameterTypes()[2] == Boolean.TYPE) {
                 mProfile = m;
                 mProfile.setAccessible(true);
                 break;
@@ -202,11 +199,17 @@ final class HookInfo {
     }
 
     private static Method getFragmentMethodBase(String targetType, Pattern pattern) {
+        String methodName;
+        if (CloudMusic.versionName.compareTo("5.4.0") > 0 && targetType.equals("CommentListEntry")) {
+            methodName = "loadListData";
+        } else {
+            methodName = "a";
+        }
         if (hookInfoCache.containsKey("class_" + targetType)) {
             String tempClassName = hookInfoCache.get("class_" + targetType);
             Class<?> clazz = findClass(tempClassName, loader);
             for (Method method : clazz.getDeclaredMethods()) {
-                if (method.getName().equals("a") && method.getReturnType() == List.class) {
+                if (method.getName().equals(methodName) && method.getReturnType() == List.class) {
                     return method;
                 }
             }
@@ -215,7 +218,7 @@ final class HookInfo {
         for (String clazzName : list) {
             Class<?> clazz = findClass(clazzName, loader);
             for (Method method : clazz.getDeclaredMethods()) {
-                if (method.getName().equals("a") && method.getReturnType() == List.class) {
+                if (method.getName().equals(methodName) && method.getReturnType() == List.class) {
                     Type type = method.getGenericReturnType();
                     if (type instanceof ParameterizedType) {
                         Type[] types = ((ParameterizedType) type).getActualTypeArguments();
@@ -239,20 +242,17 @@ final class HookInfo {
         List<String> list = ClassHelper.getFilteredClasses(true, pattern);
         for (String clazzName : list) {
             Class<?> clazz = findClass(clazzName, loader);
-            boolean match = true;
             Field[] fields = clazz.getDeclaredFields();
-            if (fields.length == 0) {
-                match = false;
-            } else {
+            if (fields.length != 0) {
+                int count = 0;
                 for (Field field : fields) {
-                    if (field.getType() != ThreadLocal.class) {
-                        match = false;
-                        break;
+                    if (field.getType() == ThreadLocal.class) {
+                        ++count;
                     }
                 }
-            }
-            if (match) {
-                return clazzName;
+                if (count == 6) {
+                    return clazzName;
+                }
             }
         }
         return null;

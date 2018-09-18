@@ -41,7 +41,6 @@ final class CloudMusic {
     private boolean removeConcertInfo;
     private boolean zeroPointDLMV;
     private boolean enableVipFeature;
-    private boolean removeHomeBannerAd;
     private boolean removeVideoFlowAd;
     private boolean removeSearchBanner;
     private boolean removeFuncDynamic;
@@ -54,10 +53,11 @@ final class CloudMusic {
     private boolean hideItemFreeData;
     private boolean hideItemNearby;
     private boolean hideItemTicket;
+    private boolean hideItemBaby;
     private Boolean mIsVipPro = null;
-    private static String versionName;
+    static String versionName;
     private static ClassLoader loader;
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
     private static WeakReference<XSharedPreferences> mSharedPrefs = new WeakReference<>(null);
     private static CloudMusic mInstance;
     private WeakReference<View> viewRadio = null;
@@ -84,7 +84,6 @@ final class CloudMusic {
         convertToPlayVersion();
         disableSignJumpToSmall();
         removeCommentAd();
-        removeBannerAd();
         removeVideoFlowAd();
         removeSearchBannerAd();
         hideSideBarItems();
@@ -118,7 +117,6 @@ final class CloudMusic {
         removeConcertInfo = prefs.getBoolean("remove_comment_concert_info", false);
         zeroPointDLMV = prefs.getBoolean("zero_point_video", false);
         enableVipFeature = prefs.getBoolean("enable_vip_feature", false);
-        removeHomeBannerAd = prefs.getBoolean("remove_home_banner_ad", false);
         removeVideoFlowAd = prefs.getBoolean("remove_video_flow_ad", false);
         removeSearchBanner = prefs.getBoolean("remove_search_banner_ad", false);
         removeFuncDynamic = prefs.getBoolean("remove_func_dynamic", false);
@@ -131,6 +129,7 @@ final class CloudMusic {
         hideItemFreeData = prefs.getBoolean("hide_item_free_data", false);
         hideItemNearby = prefs.getBoolean("hide_item_nearby", false);
         hideItemTicket = prefs.getBoolean("hide_item_ticket", false);
+        hideItemBaby = prefs.getBoolean("hide_item_baby", false);
     }
 
     @SuppressWarnings("all")
@@ -323,29 +322,6 @@ final class CloudMusic {
         }
     }
 
-    private void removeBannerAd() {
-        Method getBanners = HookInfo.getInnerFragmentMethod("Banner");
-        if (getBanners == null) return;
-        hookMethod(getBanners, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                loadPrefs();
-                if (!removeHomeBannerAd) return;
-                List<?> list = (List) param.getResult();
-                if (list == null || list.isEmpty()) return;
-                Iterator<?> iterator = list.iterator();
-                while (iterator.hasNext()) {
-                    Object banner = iterator.next();
-                    if (DEBUG) log(banner.toString());
-                    String typeTitle = callMethod(banner, "getTypeTitle").toString();
-                    if ("广告".equals(typeTitle) || "商城".equals(typeTitle)) {
-                        iterator.remove();
-                    }
-                }
-            }
-        });
-    }
-
     private void removeVideoFlowAd() {
         if (versionName.compareTo("5.3.0") < 0) return;
         Method getVideos = HookInfo.getFragmentMethod("VideoTimelineData");
@@ -399,12 +375,10 @@ final class CloudMusic {
                             loadPrefs();
                             if (!hideItemVIP) return;
                             TextView textView = (TextView) param.thisObject;
+                            String name = textView.getClass().getName();
                             View parent = (View) textView.getParent();
-                            if (parent != null) {
-                                Class<?> clazz = parent.getClass().getSuperclass();
-                                if (clazz == FrameLayout.class) {
-                                    parent.setVisibility(View.GONE);
-                                }
+                            if (name.endsWith("CustomThemeTextView") || parent != null) {
+                                parent.setVisibility(View.GONE);
                             }
                         } else if ("商城".equals(content)) {
                             loadPrefs();
@@ -457,6 +431,18 @@ final class CloudMusic {
                             View parent = (View) textView.getParent();
                             if (parent != null && parent.getClass() == LinearLayout.class) {
                                 textView.performClick();
+                            }
+                        } else if ("亲子频道".equals(content)) {
+                            loadPrefs();
+                            if (!hideItemBaby) return;
+                            TextView textView = (TextView) param.thisObject;
+                            View parent = (View) textView.getParent();
+                            if (parent != null) {
+                                Class<?> clazz = parent.getClass().getSuperclass();
+                                if (clazz == FrameLayout.class) {
+                                    ViewGroup.LayoutParams params = parent.getLayoutParams();
+                                    params.height = 0;
+                                }
                             }
                         }
                     }

@@ -24,10 +24,6 @@
             android:title="@string/auto_sign_title" />
         <SwitchPreference
             android:defaultValue="false"
-            android:key="remove_home_banner_ad"
-            android:title="@string/remove_home_banner_ad_title" />
-        <SwitchPreference
-            android:defaultValue="false"
             android:key="remove_video_flow_ad"
             android:title="@string/remove_video_flow_ad_title" />
         <SwitchPreference
@@ -115,6 +111,10 @@
             android:defaultValue="false"
             android:key="hide_item_nearby"
             android:title="@string/hide_item_nearby_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="hide_item_baby"
+            android:title="@string/hide_item_baby_title" />
         <SwitchPreference
             android:defaultValue="false"
             android:key="hide_item_ticket"
