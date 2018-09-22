@@ -68,19 +68,31 @@ final class HookInfo {
         }
     }
 
-    static void saveHookInfo() {
-        if (!needUpdate) return;
-        try {
-            Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
-            long lastUpdateTime = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).lastUpdateTime;
-            File hookInfoFile = new File(context.getCacheDir(), "HookInfo.dat");
-            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(hookInfoFile));
-            out.writeLong(lastUpdateTime);
-            out.writeObject(hookInfoCache);
-            out.flush();
-            out.close();
-        } catch (Exception e) {
-            log(e);
+    static void saveHookInfo(boolean hasExtraException) {
+        if (needUpdate && hookInfoCache.keySet().containsAll(keys) && !hasExtraException) {
+            try {
+                Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
+                long lastUpdateTime = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).lastUpdateTime;
+                File hookInfoFile = new File(context.getCacheDir(), "HookInfo.dat");
+                ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(hookInfoFile));
+                out.writeLong(lastUpdateTime);
+                out.writeObject(hookInfoCache);
+                out.flush();
+                out.close();
+            } catch (Exception e) {
+                log(e);
+            }
+        }
+        if (!hookInfoCache.keySet().containsAll(keys) || hasExtraException) {
+            try {
+                Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
+                File hookInfoFile = new File(context.getCacheDir(), "HookInfo.dat");
+                if (hookInfoFile.exists()) {
+                    hookInfoFile.delete();
+                }
+            } catch (Exception e) {
+                log(e);
+            }
         }
     }
 

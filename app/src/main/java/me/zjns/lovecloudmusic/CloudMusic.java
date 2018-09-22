@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodHook.Unhook;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
@@ -57,7 +58,8 @@ final class CloudMusic {
     private Boolean mIsVipPro = null;
     static String versionName;
     private static ClassLoader loader;
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
+    private static boolean hasExtraException = false;
     private static WeakReference<XSharedPreferences> mSharedPrefs = new WeakReference<>(null);
     private static CloudMusic mInstance;
     private WeakReference<View> viewRadio = null;
@@ -93,7 +95,7 @@ final class CloudMusic {
         hookLyricTemplate();
         removeSplashAd();
 
-        HookInfo.saveHookInfo();
+        HookInfo.saveHookInfo(hasExtraException);
     }
 
     private XSharedPreferences getSharedPrefs() {
@@ -172,7 +174,7 @@ final class CloudMusic {
     private void convertToPlayVersion() {
         Method getChannel = HookInfo.getMethodChannel();
         if (getChannel != null) {
-            hookMethod(getChannel, new XC_MethodHook() {
+            Unhook unhook = hookMethod(getChannel, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                     loadPrefs();
@@ -181,6 +183,7 @@ final class CloudMusic {
                     }
                 }
             });
+            if (unhook == null) hasExtraException = true;
         }
     }
 
@@ -210,7 +213,7 @@ final class CloudMusic {
         } else if (versionName.compareTo("4.3.5") >= 0) {
             Method userGroup = HookInfo.getMethodUserGroup();
             if (userGroup != null) {
-                hookMethod(userGroup, new XC_MethodHook() {
+                Unhook unhook = hookMethod(userGroup, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         loadPrefs();
@@ -219,10 +222,11 @@ final class CloudMusic {
                         }
                     }
                 });
+                if (unhook == null) hasExtraException = true;
             }
             Method isWeekend = HookInfo.getMethodIsWeekend();
             if (isWeekend != null) {
-                hookMethod(isWeekend, new XC_MethodHook() {
+                Unhook unhook = hookMethod(isWeekend, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         loadPrefs();
@@ -231,6 +235,7 @@ final class CloudMusic {
                         }
                     }
                 });
+                if (unhook == null) hasExtraException = true;
             }
         }
     }
@@ -247,7 +252,7 @@ final class CloudMusic {
         if (versionName.compareTo("4.2.1") <= 0) return;
         Method getComments = HookInfo.getInnerFragmentMethod("CommentListEntry");
         if (getComments == null) return;
-        hookMethod(getComments, new XC_MethodHook() {
+        Unhook unhook = hookMethod(getComments, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 loadPrefs();
@@ -262,6 +267,7 @@ final class CloudMusic {
                 }
             }
         });
+        if (unhook == null) hasExtraException = true;
     }
 
     private void hookVideoPoint() {
@@ -325,7 +331,7 @@ final class CloudMusic {
     private void removeVideoFlowAd() {
         if (versionName.compareTo("5.3.0") < 0) return;
         Method getVideos = HookInfo.getFragmentMethod("VideoTimelineData");
-        hookMethod(getVideos, new XC_MethodHook() {
+        Unhook unhook = hookMethod(getVideos, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 loadPrefs();
@@ -341,6 +347,7 @@ final class CloudMusic {
                 }
             }
         });
+        if (unhook == null) hasExtraException = true;
     }
 
     private void hideSideBarItems() {
