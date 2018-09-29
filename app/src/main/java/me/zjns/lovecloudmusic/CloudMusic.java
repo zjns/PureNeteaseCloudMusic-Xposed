@@ -44,6 +44,7 @@ final class CloudMusic {
     private boolean enableVipFeature;
     private boolean removeVideoFlowAd;
     private boolean removeSearchBanner;
+    private boolean removeMyInfoView;
     private boolean removeFuncDynamic;
     private boolean removeFuncVideo;
     private boolean removeFuncRadio;
@@ -94,6 +95,7 @@ final class CloudMusic {
         hookVIPTheme();
         hookLyricTemplate();
         removeSplashAd();
+        removeMyInfoView();
 
         HookInfo.saveHookInfo(hasExtraException);
     }
@@ -121,6 +123,7 @@ final class CloudMusic {
         enableVipFeature = prefs.getBoolean("enable_vip_feature", false);
         removeVideoFlowAd = prefs.getBoolean("remove_video_flow_ad", false);
         removeSearchBanner = prefs.getBoolean("remove_search_banner_ad", false);
+        removeMyInfoView = prefs.getBoolean("remove_my_info_view", false);
         removeFuncDynamic = prefs.getBoolean("remove_func_dynamic", false);
         removeFuncVideo = prefs.getBoolean("remove_func_video", false);
         removeFuncRadio = prefs.getBoolean("remove_func_radio", false);
@@ -244,8 +247,8 @@ final class CloudMusic {
         int type = (int) callMethod(obj, "getType");
         return type == 5 && removeConcertInfo ||
                 type == 6 && removeTopic ||
-                (type == 9 || type == 13) && removeAd ||
-                type == 11 && removeVideo;
+                type == 11 && removeVideo ||
+                (type == 9 || type == 13 || type == 14) && removeAd;
     }
 
     private void removeCommentAd() {
@@ -493,6 +496,20 @@ final class CloudMusic {
                 }
             }
         });
+    }
+
+    private void removeMyInfoView() {
+        if (versionName.compareTo("5.3.0") < 0) return;
+        findAndHookConstructor("com.netease.cloudmusic.adapter.MyMusicAdapter$CardView", loader,
+                Context.class, AttributeSet.class, Integer.TYPE, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        loadPrefs();
+                        if (!removeMyInfoView) return;
+                        View view = (View) param.thisObject;
+                        view.setVisibility(View.GONE);
+                    }
+                });
     }
 
     private boolean isVipPro() {

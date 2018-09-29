@@ -27,6 +27,7 @@
     <string name="hide_item_nearby_title">隐藏附近的人</string>
     <string name="hide_item_ticket_title">隐藏优惠券</string>
     <string name="hide_item_baby_title">隐藏亲子频道</string>
+    <string name="remove_my_info_view_title">移除主页顶部个人信息栏</string>
     <string name="enable_all_functions_title">启用模块</string>
     <string name="auto_sign_title">自动签到</string>
     <string name="remove_video_flow_ad_title">移除视频流广告</string>
