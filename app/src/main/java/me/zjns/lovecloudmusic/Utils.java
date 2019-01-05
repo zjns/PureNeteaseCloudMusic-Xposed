@@ -89,6 +89,15 @@ final class Utils {
         }
     }
 
+    static XC_MethodHook.Unhook findAndHookConstructor(Class<?> clazz, Object... parameterTypesAndCallback) {
+        try {
+            return XposedHelpers.findAndHookConstructor(clazz, parameterTypesAndCallback);
+        } catch (Throwable t) {
+            log(t);
+            return null;
+        }
+    }
+
     static XC_MethodHook.Unhook hookMethod(Member hookMethod, XC_MethodHook callback) {
         try {
             return XposedBridge.hookMethod(hookMethod, callback);
@@ -96,5 +105,16 @@ final class Utils {
             log(t);
             return null;
         }
+    }
+
+    static boolean isPackageInstalled(Context context, String pkgName) {
+        boolean flag = false;
+        try {
+            context.getPackageManager().getApplicationInfo(pkgName, 0);
+            flag = true;
+        } catch (PackageManager.NameNotFoundException ignored) {
+        }
+
+        return flag;
     }
 }

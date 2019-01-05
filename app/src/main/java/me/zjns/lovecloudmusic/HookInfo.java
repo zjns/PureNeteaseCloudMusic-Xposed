@@ -24,35 +24,47 @@ import static de.robv.android.xposed.XposedHelpers.findMethodExact;
 
 @SuppressWarnings("unchecked")
 final class HookInfo {
-    private static ClassLoader loader;
-    private static boolean needUpdate = true;
-    private static List<String> keys = new ArrayList<>();
-    private static HashMap<String, String> hookInfoCache = new HashMap<>();
+    private ClassLoader loader;
+    private boolean needUpdate = true;
+    private List<String> keys = new ArrayList<>();
+    private HashMap<String, String> hookInfoCache = new HashMap<>();
+    private final Pattern PATTERN_CLASSES_CHANNEL = Pattern.compile("^com\\.netease\\.cloudmusic\\.utils\\.[a-z]$");
+    private final Pattern PATTERN_CLASSES_INNER_FRAGMENT = Pattern.compile("^com\\.netease\\.cloudmusic\\.fragment\\.[a-z]+\\$[a-z1-9]+$");
+    private final Pattern PATTERN_CLASSES_FRAGMENT = Pattern.compile("^com\\.netease\\.cloudmusic\\.fragment\\.[a-z]+$");
+    private final Pattern PATTERN_CLASSES_DATE_UTIL = Pattern.compile("^com\\.netease\\.cloudmusic\\.utils\\.[a-z]{2}$");
+    private final Pattern PATTERN_CLASSES_STATE_UTIL = Pattern.compile("^com\\.netease\\.cloudmusic\\.module\\.[a-z]\\.[a-z]$");
 
-    static void setClassLoader(ClassLoader classLoader) {
+
+    HookInfo(String version, ClassLoader classLoader) {
+        setKeys(version);
+        setClassLoader(classLoader);
+        readHookInfo();
+    }
+
+    private void setClassLoader(ClassLoader classLoader) {
         loader = classLoader;
     }
 
-    static void setKeys(String version) {
+    private void setKeys(String version) {
         keys.clear();
-        keys.add("method_channel");
-        if (version.compareTo("4.2.1") > 0) {
-            keys.add("class_CommentListEntry");
-            if (version.compareTo("4.3.5") >= 0) {
-                keys.add("method_is_weekend");
-                keys.add("method_user_group");
-                if (version.compareTo("5.3.0") >= 0) {
-                    keys.add("class_VideoTimelineData");
+        keys.add(Constants.KEY_METHOD_CHANNEL);
+        if (version.compareTo(Constants.CM_VERSION_421) > 0) {
+            keys.add(Constants.KEY_CLASS_COMMENT_LIST_ENTRY);
+            if (version.compareTo(Constants.CM_VERSION_435) >= 0) {
+                keys.add(Constants.KEY_METHOD_IS_WEEKEND);
+                keys.add(Constants.KEY_METHOD_USER_GROUP);
+                if (version.compareTo(Constants.CM_VERSION_530) >= 0) {
+                    keys.add(Constants.KEY_CLASS_VIDEO_TIMELINE_DATA);
                 }
             }
         }
     }
 
-    static void readHookInfo() {
+    private void readHookInfo() {
         try {
-            Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
+            Context context = Utils.getPackageContext(Constants.HOOK_PACKAGE_NAME);
             long lastUpdateTime = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).lastUpdateTime;
-            File hookInfoFile = new File(context.getCacheDir(), "HookInfo.dat");
+            File hookInfoFile = new File(context.getCacheDir(), Constants.FILE_HOOK_INFO);
             if (hookInfoFile.isFile() && hookInfoFile.canRead()) {
                 ObjectInputStream in = new ObjectInputStream(new FileInputStream(hookInfoFile));
                 if (in.readLong() == lastUpdateTime) {
@@ -68,12 +80,13 @@ final class HookInfo {
         }
     }
 
-    static void saveHookInfo(boolean hasExtraException) {
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    void saveHookInfo(boolean hasExtraException) {
         if (needUpdate && hookInfoCache.keySet().containsAll(keys) && !hasExtraException) {
             try {
-                Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
+                Context context = Utils.getPackageContext(Constants.HOOK_PACKAGE_NAME);
                 long lastUpdateTime = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).lastUpdateTime;
-                File hookInfoFile = new File(context.getCacheDir(), "HookInfo.dat");
+                File hookInfoFile = new File(context.getCacheDir(), Constants.FILE_HOOK_INFO);
                 ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(hookInfoFile));
                 out.writeLong(lastUpdateTime);
                 out.writeObject(hookInfoCache);
@@ -85,8 +98,8 @@ final class HookInfo {
         }
         if (!hookInfoCache.keySet().containsAll(keys) || hasExtraException) {
             try {
-                Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
-                File hookInfoFile = new File(context.getCacheDir(), "HookInfo.dat");
+                Context context = Utils.getPackageContext(Constants.HOOK_PACKAGE_NAME);
+                File hookInfoFile = new File(context.getCacheDir(), Constants.FILE_HOOK_INFO);
                 if (hookInfoFile.exists()) {
                     hookInfoFile.delete();
                 }
@@ -96,10 +109,10 @@ final class HookInfo {
         }
     }
 
-    static Method getMethodIsWeekend() {
-        if (hookInfoCache.containsKey("method_is_weekend")) {
-            String tempMethodName = hookInfoCache.get("method_is_weekend");
-            String tempClassName = hookInfoCache.get("class_is_weekend");
+    Method getMethodIsWeekend() {
+        if (hookInfoCache.containsKey(Constants.KEY_METHOD_IS_WEEKEND)) {
+            String tempMethodName = hookInfoCache.get(Constants.KEY_METHOD_IS_WEEKEND);
+            String tempClassName = hookInfoCache.get(Constants.KEY_CLASS_IS_WEEKEND);
             return findMethodExact(tempClassName, loader, tempMethodName);
         }
         String clazzName = getDateUtilClassName();
@@ -109,9 +122,9 @@ final class HookInfo {
                     && method.getParameterTypes().length == 0
                     && Modifier.isPublic(method.getModifiers())
                     && Modifier.isStatic(method.getModifiers())) {
-                if (!hookInfoCache.containsKey("method_is_weekend")) {
-                    hookInfoCache.put("method_is_weekend", method.getName());
-                    hookInfoCache.put("class_is_weekend", method.getDeclaringClass().getName());
+                if (!hookInfoCache.containsKey(Constants.KEY_METHOD_IS_WEEKEND)) {
+                    hookInfoCache.put(Constants.KEY_METHOD_IS_WEEKEND, method.getName());
+                    hookInfoCache.put(Constants.KEY_CLASS_IS_WEEKEND, method.getDeclaringClass().getName());
                 }
                 return method;
             }
@@ -119,10 +132,10 @@ final class HookInfo {
         return null;
     }
 
-    static Method getMethodUserGroup() {
-        if (hookInfoCache.containsKey("method_user_group")) {
-            String tempMethodName = hookInfoCache.get("method_user_group");
-            String tempClassName = hookInfoCache.get("class_user_group");
+    Method getMethodUserGroup() {
+        if (hookInfoCache.containsKey(Constants.KEY_METHOD_USER_GROUP)) {
+            String tempMethodName = hookInfoCache.get(Constants.KEY_METHOD_USER_GROUP);
+            String tempClassName = hookInfoCache.get(Constants.KEY_CLASS_USER_GROUP);
             return findMethodExact(tempClassName, loader, tempMethodName, String.class);
         }
         String clazzName = getStateUtilClassName();
@@ -131,9 +144,9 @@ final class HookInfo {
             if (method.getReturnType() == String.class
                     && method.getParameterTypes().length == 1
                     && method.getParameterTypes()[0] == String.class) {
-                if (!hookInfoCache.containsKey("method_user_group")) {
-                    hookInfoCache.put("method_user_group", method.getName());
-                    hookInfoCache.put("class_user_group", method.getDeclaringClass().getName());
+                if (!hookInfoCache.containsKey(Constants.KEY_METHOD_USER_GROUP)) {
+                    hookInfoCache.put(Constants.KEY_METHOD_USER_GROUP, method.getName());
+                    hookInfoCache.put(Constants.KEY_CLASS_USER_GROUP, method.getDeclaringClass().getName());
                 }
                 return method;
             }
@@ -141,14 +154,13 @@ final class HookInfo {
         return null;
     }
 
-    static Method getMethodChannel() {
-        if (hookInfoCache.containsKey("method_channel")) {
-            String tempMethodName = hookInfoCache.get("method_channel");
-            String tempClassName = hookInfoCache.get("class_channel");
+    Method getMethodChannel() {
+        if (hookInfoCache.containsKey(Constants.KEY_METHOD_CHANNEL)) {
+            String tempMethodName = hookInfoCache.get(Constants.KEY_METHOD_CHANNEL);
+            String tempClassName = hookInfoCache.get(Constants.KEY_CLASS_CHANNEL);
             return findMethodExact(tempClassName, loader, tempMethodName, Context.class, String.class);
         }
-        Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.utils\\.[a-z]$");
-        List<String> list = ClassHelper.getFilteredClasses(true, pattern);
+        List<String> list = ClassHelper.getFilteredClasses(true, PATTERN_CLASSES_CHANNEL);
         for (String clazzName : list) {
             Class<?> clazz = findClass(clazzName, loader);
             Field[] fields = clazz.getDeclaredFields();
@@ -163,9 +175,9 @@ final class HookInfo {
                             && method.getParameterTypes()[1] == String.class
                             && Modifier.isPublic(method.getModifiers())
                             && Modifier.isStatic(method.getModifiers())) {
-                        if (!hookInfoCache.containsKey("method_channel")) {
-                            hookInfoCache.put("method_channel", method.getName());
-                            hookInfoCache.put("class_channel", method.getDeclaringClass().getName());
+                        if (!hookInfoCache.containsKey(Constants.KEY_METHOD_CHANNEL)) {
+                            hookInfoCache.put(Constants.KEY_METHOD_CHANNEL, method.getName());
+                            hookInfoCache.put(Constants.KEY_CLASS_CHANNEL, method.getDeclaringClass().getName());
                         }
                         return method;
                     }
@@ -175,17 +187,15 @@ final class HookInfo {
         return null;
     }
 
-    static Method getInnerFragmentMethod(String targetType) {
-        Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.fragment\\.[a-z]+\\$[a-z1-9]+$");
-        return getFragmentMethodBase(targetType, pattern);
+    Method getInnerFragmentMethod(String targetType) {
+        return getFragmentMethodBase(targetType, PATTERN_CLASSES_INNER_FRAGMENT);
     }
 
-    static Method getFragmentMethod(String targetType) {
-        Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.fragment\\.[a-z]+$");
-        return getFragmentMethodBase(targetType, pattern);
+    Method getFragmentMethod(String targetType) {
+        return getFragmentMethodBase(targetType, PATTERN_CLASSES_FRAGMENT);
     }
 
-    static Object getProfile() {
+    Object getProfile() {
         Class<?> NeteaseMusicUtils = findClass("com.netease.cloudmusic.utils.NeteaseMusicUtils", loader);
         Method mProfile = null;
         for (Method m : NeteaseMusicUtils.getDeclaredMethods()) {
@@ -203,16 +213,17 @@ final class HookInfo {
             return null;
         }
         try {
-            Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
+            Context context = Utils.getPackageContext(Constants.HOOK_PACKAGE_NAME);
             return mProfile.invoke(null, context, "Session.Profile", true);
         } catch (Throwable t) {
             return null;
         }
     }
 
-    private static Method getFragmentMethodBase(String targetType, Pattern pattern) {
+    private Method getFragmentMethodBase(String targetType, Pattern pattern) {
         String methodName;
-        if (CloudMusic.versionName.compareTo("5.4.0") > 0 && targetType.equals("CommentListEntry")) {
+        if (CloudMusic.versionName.compareTo(Constants.CM_VERSION_540) > 0
+                && Constants.META_TYPE_COMMENT_LIST_ENTRY.equals(targetType)) {
             methodName = "loadListData";
         } else {
             methodName = "a";
@@ -249,9 +260,8 @@ final class HookInfo {
         return null;
     }
 
-    private static String getDateUtilClassName() {
-        Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.utils\\.[a-z]{2}$");
-        List<String> list = ClassHelper.getFilteredClasses(true, pattern);
+    private String getDateUtilClassName() {
+        List<String> list = ClassHelper.getFilteredClasses(true, PATTERN_CLASSES_DATE_UTIL);
         for (String clazzName : list) {
             Class<?> clazz = findClass(clazzName, loader);
             Field[] fields = clazz.getDeclaredFields();
@@ -270,9 +280,8 @@ final class HookInfo {
         return null;
     }
 
-    private static String getStateUtilClassName() {
-        Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.module\\.[a-z]\\.[a-z]$");
-        List<String> list = ClassHelper.getFilteredClasses(true, pattern);
+    private String getStateUtilClassName() {
+        List<String> list = ClassHelper.getFilteredClasses(true, PATTERN_CLASSES_STATE_UTIL);
         for (String clazzName : list) {
             Class<?> clazz = findClass(clazzName, loader);
             for (Field field : clazz.getDeclaredFields()) {
@@ -282,35 +291,5 @@ final class HookInfo {
             }
         }
         return null;
-    }
-
-    static List<String> getInnerFragmentClassName(String type) {
-        Pattern pattern = Pattern.compile("^com\\.netease\\.cloudmusic\\.fragment\\.[a-z]+\\$[1-9]+$");
-        List<String> list = ClassHelper.getFilteredClasses(true, pattern);
-        List<String> classNameList = new ArrayList<>();
-        for (String clazzName : list) {
-            Class<?> clazz = findClass(clazzName, loader);
-            if (findInnerFragmentClass(clazz, type)) {
-                classNameList.add(clazzName);
-            }
-        }
-        return classNameList;
-    }
-
-    private static boolean findInnerFragmentClass(Class<?> clazz, String targetType) {
-        for (Method method : clazz.getDeclaredMethods()) {
-            if (method.getName().equals("a") && method.getReturnType() == List.class) {
-                Type type = method.getGenericReturnType();
-                if (type instanceof ParameterizedType) {
-                    Type[] types = ((ParameterizedType) type).getActualTypeArguments();
-                    if (types.length == 1
-                            && types[0] instanceof Class
-                            && types[0].toString().endsWith(targetType)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 }

@@ -47,7 +47,7 @@
         <SwitchPreference
             android:defaultValue="false"
             android:key="remove_my_info_view"
-            android:title="@string/remove_my_info_view_title"/>
+            android:title="@string/remove_my_info_view_title" />
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -65,6 +65,10 @@
             android:defaultValue="false"
             android:key="remove_comment_topic"
             android:title="@string/remove_comment_topic_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_comment_live"
+            android:title="@string/remove_comment_live_title" />
         <SwitchPreference
             android:defaultValue="false"
             android:key="remove_comment_concert_info"
@@ -101,6 +105,10 @@
             android:title="@string/hide_item_vip_title" />
         <SwitchPreference
             android:defaultValue="false"
+            android:key="hide_item_live_ticket"
+            android:title="@string/hide_item_live_ticket_title" />
+        <SwitchPreference
+            android:defaultValue="false"
             android:key="hide_item_shop"
             android:title="@string/hide_item_shop_title" />
         <SwitchPreference
@@ -123,5 +131,9 @@
             android:defaultValue="false"
             android:key="hide_item_ticket"
             android:title="@string/hide_item_ticket_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="hide_item_singer"
+            android:title="@string/hide_item_singer_title" />
     </PreferenceCategory>
 </PreferenceScreen>

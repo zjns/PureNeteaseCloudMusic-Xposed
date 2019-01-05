@@ -34,7 +34,6 @@ final class MultiDexHelper {
     private static final String PREFS_FILE = "multidex.version";
     private static final String KEY_DEX_NUMBER = "dex.number";
 
-    @SuppressWarnings("all")
     private static SharedPreferences getMultiDexPreferences(Context context) {
         return context.getSharedPreferences(PREFS_FILE,
                 Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB
@@ -55,7 +54,8 @@ final class MultiDexHelper {
         File dexDir = new File(applicationInfo.dataDir, SECONDARY_FOLDER_NAME);
 
         List<String> sourcePaths = new ArrayList<>();
-        sourcePaths.add(applicationInfo.sourceDir); //add the default apk path
+        //add the default apk path
+        sourcePaths.add(applicationInfo.sourceDir);
 
         //the prefix of extracted file, ie: test.classes
         String extractedFilePrefix = sourceApk.getName() + EXTRACTED_NAME_EXT;
@@ -87,7 +87,7 @@ final class MultiDexHelper {
     @SuppressWarnings({"ResultOfMethodCallIgnored", "deprecation"})
     static List<String> getAllClasses(boolean useCache) throws PackageManager.NameNotFoundException {
         // read class list from cache
-        Context context = Utils.getPackageContext(HookInit.HOOK_PACKAGE_NAME);
+        Context context = Utils.getPackageContext(Constants.HOOK_PACKAGE_NAME);
         long lastUpdateTime = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).lastUpdateTime;
         File classesFile = new File(context.getCacheDir(), "ClassList.dat");
 

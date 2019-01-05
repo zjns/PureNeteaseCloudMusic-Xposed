@@ -15,14 +15,13 @@ import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
  */
 
 public class HookInit implements IXposedHookLoadPackage {
-    static final String MODULE_PACKAGE_NAME = HookInit.class.getPackage().getName();
-    static final String HOOK_PACKAGE_NAME = "com.netease.cloudmusic";
 
+    @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
-        if (lpparam.packageName.equals(MODULE_PACKAGE_NAME)) {
+        if (lpparam.packageName.equals(Constants.MODULE_PACKAGE_NAME)) {
             makeModuleActive(lpparam.classLoader);
         }
-        if (lpparam.packageName.equals(HOOK_PACKAGE_NAME)) {
+        if (lpparam.packageName.equals(Constants.HOOK_PACKAGE_NAME)) {
             findAndHookMethod(Instrumentation.class, "callApplicationOnCreate", Application.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -33,6 +32,6 @@ public class HookInit implements IXposedHookLoadPackage {
     }
 
     private void makeModuleActive(ClassLoader loader) {
-        findAndHookMethod(MODULE_PACKAGE_NAME + ".MainActivity", loader, "isModuleEnabled", XC_MethodReplacement.returnConstant(true));
+        findAndHookMethod(Constants.MODULE_PACKAGE_NAME + ".MainActivity", loader, "isModuleEnabled", XC_MethodReplacement.returnConstant(true));
     }
 }

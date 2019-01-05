@@ -30,6 +30,8 @@ import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getIntField;
 import static me.zjns.lovecloudmusic.Utils.findAndHookConstructor;
 import static me.zjns.lovecloudmusic.Utils.findAndHookMethod;
+import static me.zjns.lovecloudmusic.Utils.findMethodByExactParameters;
+import static me.zjns.lovecloudmusic.Utils.getPackageVersionName;
 import static me.zjns.lovecloudmusic.Utils.hookMethod;
 
 final class CloudMusic {
@@ -39,6 +41,7 @@ final class CloudMusic {
     private boolean removeAd;
     private boolean removeVideo;
     private boolean removeTopic;
+    private boolean removeLive;
     private boolean removeConcertInfo;
     private boolean zeroPointDLMV;
     private boolean enableVipFeature;
@@ -50,37 +53,40 @@ final class CloudMusic {
     private boolean removeFuncRadio;
     private boolean hideDot;
     private boolean hideItemVIP;
+    private boolean hideItemLiveTicket;
     private boolean hideItemShop;
     private boolean hideItemGame;
     private boolean hideItemFreeData;
     private boolean hideItemNearby;
     private boolean hideItemTicket;
     private boolean hideItemBaby;
+    private boolean hideItemSinger;
     private Boolean mIsVipPro = null;
     static String versionName;
     private static ClassLoader loader;
-    private static final boolean DEBUG = false;
-    private static boolean hasExtraException = false;
     private static WeakReference<XSharedPreferences> mSharedPrefs = new WeakReference<>(null);
-    private static CloudMusic mInstance;
+    private static CloudMusic sInstance;
+    private boolean hasExtraException = false;
     private WeakReference<View> viewRadio = null;
+    private int concertType;
+    private HookInfo hookInfo;
 
     private CloudMusic() {
     }
 
     static CloudMusic getInstance() {
-        if (mInstance == null) {
-            mInstance = new CloudMusic();
+        if (sInstance == null) {
+            sInstance = new CloudMusic();
         }
-        return mInstance;
+        return sInstance;
     }
 
     void hookHandler(LoadPackageParam lpparam) throws Throwable {
-        versionName = Utils.getPackageVersionName(HookInit.HOOK_PACKAGE_NAME);
-        HookInfo.setClassLoader(lpparam.classLoader);
-        HookInfo.setKeys(versionName);
-        HookInfo.readHookInfo();
+        versionName = getPackageVersionName(Constants.HOOK_PACKAGE_NAME);
+        hookInfo = new HookInfo(versionName, lpparam.classLoader);
         loader = lpparam.classLoader;
+        setConcertType();
+
         loadPrefs();
         if (!mSharedPrefs.get().getBoolean("enable_all_functions", true)) return;
 
@@ -96,14 +102,15 @@ final class CloudMusic {
         hookLyricTemplate();
         removeSplashAd();
         removeMyInfoView();
+        enableVIPAudioEffect();
 
-        HookInfo.saveHookInfo(hasExtraException);
+        hookInfo.saveHookInfo(hasExtraException);
     }
 
     private XSharedPreferences getSharedPrefs() {
         XSharedPreferences prefs = mSharedPrefs.get();
         if (prefs == null) {
-            prefs = new XSharedPreferences(HookInit.MODULE_PACKAGE_NAME);
+            prefs = new XSharedPreferences(Constants.MODULE_PACKAGE_NAME);
             mSharedPrefs = new WeakReference<>(prefs);
         }
         return prefs;
@@ -118,6 +125,7 @@ final class CloudMusic {
         removeAd = prefs.getBoolean("remove_comment_ad", false);
         removeVideo = prefs.getBoolean("remove_comment_video", false);
         removeTopic = prefs.getBoolean("remove_comment_topic", false);
+        removeLive = prefs.getBoolean("remove_comment_live", false);
         removeConcertInfo = prefs.getBoolean("remove_comment_concert_info", false);
         zeroPointDLMV = prefs.getBoolean("zero_point_video", false);
         enableVipFeature = prefs.getBoolean("enable_vip_feature", false);
@@ -129,12 +137,14 @@ final class CloudMusic {
         removeFuncRadio = prefs.getBoolean("remove_func_radio", false);
         hideDot = prefs.getBoolean("hide_dot", false);
         hideItemVIP = prefs.getBoolean("hide_item_vip", false);
+        hideItemLiveTicket = prefs.getBoolean("hide_item_live_ticket", false);
         hideItemShop = prefs.getBoolean("hide_item_shop", false);
         hideItemGame = prefs.getBoolean("hide_item_game", false);
         hideItemFreeData = prefs.getBoolean("hide_item_free_data", false);
         hideItemNearby = prefs.getBoolean("hide_item_nearby", false);
         hideItemTicket = prefs.getBoolean("hide_item_ticket", false);
         hideItemBaby = prefs.getBoolean("hide_item_baby", false);
+        hideItemSinger = prefs.getBoolean("hide_item_singer", false);
     }
 
     @SuppressWarnings("all")
@@ -148,13 +158,21 @@ final class CloudMusic {
         }
     }
 
+    private void setConcertType() {
+        if (versionName.compareTo(Constants.CM_VERSION_580) >= 0) {
+            concertType = 10;
+        } else {
+            concertType = 5;
+        }
+    }
+
     private void removeSplashAd() {
-        if (versionName.compareTo("5.2.0") < 0 || !convertToPlay) return;
+        if (versionName.compareTo(Constants.CM_VERSION_520) < 0 || !convertToPlay) return;
         Class<?> BundleClass = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? BaseBundle.class : Bundle.class;
         findAndHookMethod(BundleClass, "getSerializable", String.class, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (param.args[0].toString().equals("adInfo")) {
+                if ("adInfo".equals(param.args[0])) {
                     param.setResult(null);
                 }
             }
@@ -175,7 +193,7 @@ final class CloudMusic {
     }
 
     private void convertToPlayVersion() {
-        Method getChannel = HookInfo.getMethodChannel();
+        Method getChannel = hookInfo.getMethodChannel();
         if (getChannel != null) {
             Unhook unhook = hookMethod(getChannel, new XC_MethodHook() {
                 @Override
@@ -191,20 +209,22 @@ final class CloudMusic {
     }
 
     private void disableSignJumpToSmall() {
-        if (versionName.compareTo("4.1.3") > 0 && versionName.compareTo("4.3.3") < 0) {
+        if (versionName.compareTo(Constants.CM_VERSION_413) > 0
+                && versionName.compareTo(Constants.CM_VERSION_433) < 0) {
             findAndHookMethod("android.app.SharedPreferencesImpl$EditorImpl", loader, "putString",
                     String.class, String.class, new XC_MethodHook() {
                         @Override
                         protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                             loadPrefs();
                             if (!dontJump) return;
-                            if (param.args[0].toString().equals("siginWebUrl")) {
+                            if ("siginWebUrl".equals(param.args[0])) {
                                 param.args[1] = null;
                             }
                         }
                     });
-        } else if (versionName.compareTo("4.3.3") >= 0 && versionName.compareTo("4.3.5") < 0) {
-            Method j = Utils.findMethodByExactParameters(findClass("com.netease.cloudmusic.module.a.b", loader), "j", Boolean.TYPE);
+        } else if (versionName.compareTo(Constants.CM_VERSION_433) >= 0
+                && versionName.compareTo(Constants.CM_VERSION_435) < 0) {
+            Method j = findMethodByExactParameters(findClass("com.netease.cloudmusic.module.a.b", loader), "j", Boolean.TYPE);
             hookMethod(j, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -213,21 +233,21 @@ final class CloudMusic {
                     param.setResult(true);
                 }
             });
-        } else if (versionName.compareTo("4.3.5") >= 0) {
-            Method userGroup = HookInfo.getMethodUserGroup();
+        } else if (versionName.compareTo(Constants.CM_VERSION_435) >= 0) {
+            Method userGroup = hookInfo.getMethodUserGroup();
             if (userGroup != null) {
                 Unhook unhook = hookMethod(userGroup, new XC_MethodHook() {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         loadPrefs();
-                        if (dontJump && param.args[0].toString().equals("yueqian")) {
+                        if (dontJump && "yueqian".equals(param.args[0])) {
                             param.setResult("t2");
                         }
                     }
                 });
                 if (unhook == null) hasExtraException = true;
             }
-            Method isWeekend = HookInfo.getMethodIsWeekend();
+            Method isWeekend = hookInfo.getMethodIsWeekend();
             if (isWeekend != null) {
                 Unhook unhook = hookMethod(isWeekend, new XC_MethodHook() {
                     @Override
@@ -245,15 +265,16 @@ final class CloudMusic {
 
     private boolean shouldRemove(Object obj) {
         int type = (int) callMethod(obj, "getType");
-        return type == 5 && removeConcertInfo ||
+        return type == concertType && removeConcertInfo ||
                 type == 6 && removeTopic ||
                 type == 11 && removeVideo ||
-                (type == 9 || type == 13 || type == 14) && removeAd;
+                (type == 9 || type == 13 || type == 14) && removeAd ||
+                type == 15 && removeLive;
     }
 
     private void removeCommentAd() {
-        if (versionName.compareTo("4.2.1") <= 0) return;
-        Method getComments = HookInfo.getInnerFragmentMethod("CommentListEntry");
+        if (versionName.compareTo(Constants.CM_VERSION_421) <= 0) return;
+        Method getComments = hookInfo.getInnerFragmentMethod(Constants.META_TYPE_COMMENT_LIST_ENTRY);
         if (getComments == null) return;
         Unhook unhook = hookMethod(getComments, new XC_MethodHook() {
             @Override
@@ -298,23 +319,40 @@ final class CloudMusic {
     private void hookVIPTheme() {
         String ThemeDetailActivity = "com.netease.cloudmusic.activity.ThemeDetailActivity";
         String ThemeDetailActivity$1 = ThemeDetailActivity + "$1";
-        findAndHookConstructor(ThemeDetailActivity$1, loader,
-                ThemeDetailActivity, Integer.TYPE, Boolean.TYPE, Boolean.TYPE, Integer.TYPE, Intent.class, String.class,
-                new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+        if (versionName.compareTo(Constants.CM_VERSION_580) < 0) {
+            findAndHookConstructor(ThemeDetailActivity$1, loader,
+                    ThemeDetailActivity, Integer.TYPE, Boolean.TYPE, Boolean.TYPE, Integer.TYPE, Intent.class, String.class,
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            loadPrefs();
+                            if (!enableVipFeature || isVipPro()) return;
+                            param.args[2] = false;
+                            param.args[3] = false;
+                        }
+                    });
+        } else {
+            Class<?> ThemeInfo = findClass("com.netease.cloudmusic.theme.core.ThemeInfo", loader);
+            findAndHookMethod(Bundle.class, "getParcelable", String.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    Object result = param.getResult();
+                    if (result != null && result.getClass() == ThemeInfo) {
                         loadPrefs();
-                        if (!enableVipFeature || isVipPro()) return;
-                        param.args[2] = false;
-                        param.args[3] = false;
+                        if (enableVipFeature && !isVipPro()) {
+                            callMethod(result, "setPaid", true);
+                            callMethod(result, "setVip", false);
+                        }
                     }
-                });
+                }
+            });
+        }
     }
 
     private void hookLyricTemplate() {
-        if (versionName.compareTo("4.1.1") < 0) return;
+        if (versionName.compareTo(Constants.CM_VERSION_411) < 0) return;
         try {
-            Method e = Utils.findMethodByExactParameters(
+            Method e = findMethodByExactParameters(
                     findClass("com.netease.cloudmusic.module.lyrictemplate.d", loader),
                     "e", Boolean.TYPE);
             hookMethod(e, new XC_MethodHook() {
@@ -332,8 +370,8 @@ final class CloudMusic {
     }
 
     private void removeVideoFlowAd() {
-        if (versionName.compareTo("5.3.0") < 0) return;
-        Method getVideos = HookInfo.getFragmentMethod("VideoTimelineData");
+        if (versionName.compareTo(Constants.CM_VERSION_530) < 0) return;
+        Method getVideos = hookInfo.getFragmentMethod(Constants.META_TYPE_VIDEO_TIMELINE_DATA);
         Unhook unhook = hookMethod(getVideos, new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -387,8 +425,18 @@ final class CloudMusic {
                             TextView textView = (TextView) param.thisObject;
                             String name = textView.getClass().getName();
                             View parent = (View) textView.getParent();
-                            if (name.endsWith("CustomThemeTextView") || parent != null) {
+                            if (name.endsWith("CustomThemeTextView") && parent != null) {
                                 parent.setVisibility(View.GONE);
+                            }
+                        } else if ("云村有票".equals(content)) {
+                            loadPrefs();
+                            if (!hideItemLiveTicket) return;
+                            TextView textView = (TextView) param.thisObject;
+                            String name = textView.getClass().getName();
+                            View parent = (View) textView.getParent();
+                            if (name.endsWith("CustomThemeTextView") && parent != null) {
+                                ViewGroup.LayoutParams params = parent.getLayoutParams();
+                                params.height = 0;
                             }
                         } else if ("商城".equals(content)) {
                             loadPrefs();
@@ -454,6 +502,18 @@ final class CloudMusic {
                                     params.height = 0;
                                 }
                             }
+                        } else if ("加入网易音乐人".equals(content)) {
+                            loadPrefs();
+                            if (!hideItemSinger) return;
+                            TextView textView = (TextView) param.thisObject;
+                            View parent = (View) textView.getParent();
+                            if (parent != null) {
+                                Class<?> clazz = parent.getClass().getSuperclass();
+                                if (clazz == FrameLayout.class) {
+                                    ViewGroup.LayoutParams params = parent.getLayoutParams();
+                                    params.height = 0;
+                                }
+                            }
                         }
                     }
                 });
@@ -499,11 +559,13 @@ final class CloudMusic {
     }
 
     private void removeMyInfoView() {
-        if (versionName.compareTo("5.3.0") < 0) return;
-        findAndHookConstructor("com.netease.cloudmusic.adapter.MyMusicAdapter$CardView", loader,
-                Context.class, AttributeSet.class, Integer.TYPE, new XC_MethodHook() {
+        if (versionName.compareTo(Constants.CM_VERSION_530) < 0) return;
+        Class<?> CardView = findClass("com.netease.cloudmusic.adapter.MyMusicAdapter$CardView", loader);
+        findAndHookConstructor(View.class, Context.class, AttributeSet.class, Integer.TYPE, Integer.TYPE,
+                new XC_MethodHook() {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        if (param.thisObject.getClass() != CardView) return;
                         loadPrefs();
                         if (!removeMyInfoView) return;
                         View view = (View) param.thisObject;
@@ -512,14 +574,35 @@ final class CloudMusic {
                 });
     }
 
+    private void enableVIPAudioEffect() {
+        if (versionName.compareTo(Constants.CM_VERSION_580) < 0) return;
+        Class<?> AudioEffectButtonData = findClass("com.netease.cloudmusic.meta.AudioEffectButtonData", loader);
+        Class<?> AudioActionView = findClass("com.netease.cloudmusic.ui.AudioActionView", loader);
+        findAndHookMethod(AudioActionView, "setDownloadTypeViews", AudioEffectButtonData, Object.class, Integer.TYPE,
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Object data = param.args[0];
+                        if (data != null && (Integer) callMethod(data, "getType") == 3) {
+                            loadPrefs();
+                            if (enableVipFeature && !isVipPro()) {
+                                callMethod(data, "setType", 1);
+                                callMethod(data, "setAnimVipType", 1);
+                                callMethod(data, "setAeVipType", 1);
+                            }
+                        }
+                    }
+                });
+    }
+
     private boolean isVipPro() {
         if (mIsVipPro != null) return mIsVipPro;
-        if (versionName.compareTo("5.3.0") >= 0) {
+        if (versionName.compareTo(Constants.CM_VERSION_530) >= 0) {
             Class<?> UserPrivilege = findClass("com.netease.cloudmusic.meta.virtual.UserPrivilege", loader);
             String vipType = callStaticMethod(UserPrivilege, "getLogVipType").toString().trim();
             return mIsVipPro = "100".equals(vipType);
         }
-        Object profile = HookInfo.getProfile();
+        Object profile = hookInfo.getProfile();
         return mIsVipPro = profile != null && (boolean) callMethod(profile, "isVipPro");
     }
 }
