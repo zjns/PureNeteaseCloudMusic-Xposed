@@ -49,22 +49,21 @@ public class MainActivity extends Activity {
     }
 
     private boolean isModuleInExposedEnabled(Context context) {
-        if (context == null) {
-            throw new IllegalArgumentException("context must not be null!!");
-        }
-
         ContentResolver contentResolver = context.getContentResolver();
         if (contentResolver == null) {
             return false;
         }
 
         Uri uri = Uri.parse("content://me.weishu.exposed.CP/");
-        Bundle result = contentResolver.call(uri, "active", null, null);
-        if (result == null) {
-            return false;
+        try {
+            Bundle result = contentResolver.call(uri, "active", null, null);
+            if (result == null) {
+                return false;
+            }
+            return result.getBoolean("active", false);
+        } catch (Exception ignored) {
         }
-
-        return result.getBoolean("active", false);
+        return false;
     }
 
     private boolean isInXposedEnvironment() {
