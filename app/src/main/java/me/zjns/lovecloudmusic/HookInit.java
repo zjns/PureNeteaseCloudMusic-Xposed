@@ -2,6 +2,7 @@ package me.zjns.lovecloudmusic;
 
 import android.app.Application;
 import android.app.Instrumentation;
+import android.content.Context;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -25,7 +26,10 @@ public class HookInit implements IXposedHookLoadPackage {
             findAndHookMethod(Instrumentation.class, "callApplicationOnCreate", Application.class, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                    CloudMusic.getInstance().hookHandler(lpparam);
+                    Context context = (Context) param.args[0];
+                    if (Utils.isInMainProcess(context)) {
+                        CloudMusic.getInstance().hookHandler(lpparam);
+                    }
                 }
             });
         }

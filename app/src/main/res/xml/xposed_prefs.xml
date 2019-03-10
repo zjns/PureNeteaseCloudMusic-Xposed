@@ -77,23 +77,6 @@
 
     <PreferenceCategory
         android:dependency="enable_all_functions"
-        android:title="@string/category_funcpart_title">
-        <SwitchPreference
-            android:defaultValue="false"
-            android:key="remove_func_dynamic"
-            android:title="@string/remove_func_dynamic_title" />
-        <SwitchPreference
-            android:defaultValue="false"
-            android:key="remove_func_video"
-            android:title="@string/remove_func_video_title" />
-        <SwitchPreference
-            android:defaultValue="false"
-            android:key="remove_func_radio"
-            android:title="@string/remove_func_radio_title" />
-    </PreferenceCategory>
-
-    <PreferenceCategory
-        android:dependency="enable_all_functions"
         android:title="@string/category_sidebar_title">
         <SwitchPreference
             android:defaultValue="false"

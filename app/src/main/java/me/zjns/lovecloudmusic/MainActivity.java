@@ -10,9 +10,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
+import android.util.Log;
 import android.widget.Toast;
 
 import java.io.File;
@@ -23,6 +25,7 @@ import java.io.File;
 
 public class MainActivity extends Activity {
     private static final String KEY_HIDE_ICON = "hide_icon";
+    private AlertDialog mActiveDialog = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -33,18 +36,19 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (isInXposedEnvironment()) {
-            if (!isModuleEnabled()) {
-                checkState();
+        checkActiveState();
+    }
+
+    private void checkActiveState() {
+        new Handler().postDelayed(() -> {
+            if (!isModuleEnabled() && !isModuleInExposedEnabled(this)) {
+                showActiveDialog();
             }
-        } else {
-            if (!isModuleInExposedEnabled(this)) {
-                checkState();
-            }
-        }
+        }, 500L);
     }
 
     private boolean isModuleEnabled() {
+        Log.i("YiTry", "My life is brilliant, My love is pure ...");
         return false;
     }
 
@@ -76,19 +80,26 @@ public class MainActivity extends Activity {
         return flag;
     }
 
-    private void checkState() {
-        new AlertDialog.Builder(this)
-                .setCancelable(false)
-                .setMessage(R.string.msg_module_not_active)
-                .setPositiveButton(R.string.btn_active, (dialog, which) -> {
-                    if (isInXposedEnvironment()) {
-                        openXposedInstaller();
-                    } else {
-                        openExposed();
-                    }
-                })
-                .setNegativeButton(R.string.btn_ignore, null)
-                .show();
+    private void showActiveDialog() {
+        if (mActiveDialog == null) {
+            mActiveDialog = new AlertDialog.Builder(this)
+                    .setCancelable(false)
+                    .setMessage(R.string.msg_module_not_active)
+                    .setPositiveButton(R.string.btn_active, (dialog, which) -> {
+                        if (isInXposedEnvironment()) {
+                            openXposedInstaller();
+                        } else {
+                            openExposed();
+                        }
+                    })
+                    .setNegativeButton(R.string.btn_ignore, null)
+                    .create();
+            mActiveDialog.show();
+        } else {
+            if (!mActiveDialog.isShowing()) {
+                mActiveDialog.show();
+            }
+        }
     }
 
     private void openXposedInstaller() {
@@ -113,10 +124,10 @@ public class MainActivity extends Activity {
     private void openExposed() {
         String exposed = "me.weishu.exp";
         if (Utils.isPackageInstalled(this, exposed)) {
-            Intent intent = getPackageManager().getLaunchIntentForPackage(exposed);
-            if (intent != null) {
-                startActivity(intent);
-            }
+            Intent intent = new Intent(exposed + ".ACTION_MODULE_MANAGE");
+            intent.setData(Uri.parse("package:" + Constants.MODULE_PACKAGE_NAME));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
         } else {
             Toast.makeText(this, R.string.toast_exposed_not_installed, Toast.LENGTH_SHORT).show();
         }
