@@ -24,10 +24,6 @@
             android:title="@string/auto_sign_title" />
         <SwitchPreference
             android:defaultValue="false"
-            android:key="remove_video_flow_ad"
-            android:title="@string/remove_video_flow_ad_title" />
-        <SwitchPreference
-            android:defaultValue="false"
             android:key="remove_search_banner_ad"
             android:title="@string/remove_search_banner_ad_title" />
         <SwitchPreference
@@ -71,8 +67,25 @@
             android:title="@string/remove_comment_live_title" />
         <SwitchPreference
             android:defaultValue="false"
+            android:key="remove_comment_vip_rcmd"
+            android:title="@string/remove_comment_vip_rcmd_title" />
+        <SwitchPreference
+            android:defaultValue="false"
             android:key="remove_comment_concert_info"
             android:title="@string/remove_comment_concert_info_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:dependency="enable_all_functions"
+        android:title="@string/category_video_flow_title">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_video_flow_ad"
+            android:title="@string/remove_video_flow_ad_title" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="remove_video_flow_live"
+            android:title="@string/remove_video_flow_live_title" />
     </PreferenceCategory>
 
     <PreferenceCategory

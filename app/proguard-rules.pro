@@ -20,6 +20,6 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -keep public class me.zjns.lovecloudmusic.HookInit
--keepclassmembernames class me.zjns.lovecloudmusic.MainActivity {
+-keepclassmembers class me.zjns.lovecloudmusic.MainActivity {
     boolean isModuleEnabled();
 }

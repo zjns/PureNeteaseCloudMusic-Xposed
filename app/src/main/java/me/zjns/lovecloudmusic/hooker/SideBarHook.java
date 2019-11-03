@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 import de.robv.android.xposed.XC_MethodHook;
 import me.zjns.lovecloudmusic.Constants;
+import me.zjns.lovecloudmusic.Utils;
 import me.zjns.lovecloudmusic.hooker.base.BaseHook;
 
 import static de.robv.android.xposed.XposedHelpers.callMethod;
@@ -161,6 +162,7 @@ public class SideBarHook extends BaseHook {
                 if ("签到".equals(text)) {
                     isFromAutoSign = true;
                     drawerUserSignIn.performClick();
+                    Utils.showToast("云村清洁工帮你自动签到了！", true, 500L);
                 }
             }
         }
@@ -187,7 +189,6 @@ public class SideBarHook extends BaseHook {
             }
         }
 
-        @SuppressWarnings("ConstantConditions")
         private boolean shouldRemove(Object tag) {
             return tag == drawerItem.TICKET && hideTicket
                     || tag == drawerItem.VIP && hideVip
@@ -207,6 +208,7 @@ public class SideBarHook extends BaseHook {
         private Object AVATAR;
         private Object MESSAGE;
         private Object MUSICIAN;
+        private Object MUSICIAN_CREATOR_CENTER;
         private Object PROFIT;
         private Object VIP;
         private Object TICKET;
@@ -218,6 +220,8 @@ public class SideBarHook extends BaseHook {
         private Object NEARBY;
         private Object THEME;
         private Object IDENTIFY;
+        private Object CREATOR_CENTER;
+        private Object MY_ORDER;
         private Object CLOCK_PLAY;
         private Object SCAN;
         private Object ALARM_CLOCK;
@@ -228,8 +232,15 @@ public class SideBarHook extends BaseHook {
         private Object DISCOUNT_COUPON;
         private Object MUSICIAN_VIEWER;
         private Object SMALL_ICE;
+        private Object YOUTH_MODE;
         private Object VOIBOX;
         private Object SETTING;
+        private Object DIV1;
+        private Object DIV2;
+        private Object DIV3;
+        private Object DIV4;
+        private Object DYNAMIC_CONTAINER;
+        private Object DYNAMIC_ITEM;
 
         private Class classDrawerItemEnum;
 
@@ -240,6 +251,7 @@ public class SideBarHook extends BaseHook {
             AVATAR = getItem("AVATAR");
             MESSAGE = getItem("MESSAGE");
             MUSICIAN = getItem("MUSICIAN");
+            MUSICIAN_CREATOR_CENTER = getItem("MUSICIAN_CREATOR_CENTER");
             PROFIT = getItem("PROFIT");
             VIP = getItem("VIP");
             TICKET = getItem("TICKET");
@@ -251,6 +263,8 @@ public class SideBarHook extends BaseHook {
             NEARBY = getItem("NEARBY");
             THEME = getItem("THEME");
             IDENTIFY = getItem("IDENTIFY");
+            CREATOR_CENTER = getItem("CREATOR_CENTER");
+            MY_ORDER = getItem("MY_ORDER");
             CLOCK_PLAY = getItem("CLOCK_PLAY");
             SCAN = getItem("SCAN");
             ALARM_CLOCK = getItem("ALARM_CLOCK");
@@ -261,8 +275,15 @@ public class SideBarHook extends BaseHook {
             DISCOUNT_COUPON = getItem("DISCOUNT_COUPON");
             MUSICIAN_VIEWER = getItem("MUSICIAN_VIEWER");
             SMALL_ICE = getItem("SMALL_ICE");
+            YOUTH_MODE = getItem("YOUTH_MODE");
             VOIBOX = getItem("VOIBOX");
             SETTING = getItem("SETTING");
+            DIV1 = getItem("DIV1");
+            DIV2 = getItem("DIV2");
+            DIV3 = getItem("DIV3");
+            DIV4 = getItem("DIV4");
+            DYNAMIC_CONTAINER = getItem("DYNAMIC_CONTAINER");
+            DYNAMIC_ITEM = getItem("DYNAMIC_ITEM");
         }
 
         @SuppressWarnings("unchecked")

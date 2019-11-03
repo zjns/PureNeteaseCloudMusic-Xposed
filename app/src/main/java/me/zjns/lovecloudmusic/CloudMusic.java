@@ -10,6 +10,7 @@ import me.zjns.lovecloudmusic.hooker.CommentListHook;
 import me.zjns.lovecloudmusic.hooker.CommonAdHook;
 import me.zjns.lovecloudmusic.hooker.OtherHook;
 import me.zjns.lovecloudmusic.hooker.SideBarHook;
+import me.zjns.lovecloudmusic.hooker.VideoFlowHook;
 import me.zjns.lovecloudmusic.hooker.VipFeatureHook;
 import me.zjns.lovecloudmusic.hooker.base.BaseHook;
 
@@ -69,6 +70,7 @@ public final class CloudMusic {
         hooks.add(new SideBarHook());
         hooks.add(new VipFeatureHook());
         hooks.add(new OtherHook());
+        hooks.add(new VideoFlowHook());
         for (BaseHook hook : hooks) {
             hook.startHook();
         }

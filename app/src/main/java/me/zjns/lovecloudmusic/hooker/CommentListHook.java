@@ -21,6 +21,7 @@ public class CommentListHook extends BaseHook {
     private boolean removeVideo;
     private boolean removeLive;
     private boolean removeTopic;
+    private boolean removeVipRcmd;
 
     @Override
     protected void hookMain() {
@@ -36,6 +37,7 @@ public class CommentListHook extends BaseHook {
         removeVideo = prefs.getBoolean("remove_comment_video", false);
         removeLive = prefs.getBoolean("remove_comment_live", false);
         removeTopic = prefs.getBoolean("remove_comment_topic", false);
+        removeVipRcmd = prefs.getBoolean("remove_comment_vip_rcmd", false);
     }
 
     private void removeCommentAd() {
@@ -49,30 +51,39 @@ public class CommentListHook extends BaseHook {
         return type == mType.AD && removeAd
                 || type == mType.BANNER_AD && removeAd
                 || type == mType.VIDEO_AD && removeAd
+                || type == mType.AD_POSITION_LIVING_TYPE && removeAd
                 || type == mType.VIDEO && removeVideo
                 || type == mType.CONCERT_INFO && removeConcert
                 || type == mType.LIVE && removeLive
-                || type == mType.RELATIVE_TOPIC && removeTopic;
+                || type == mType.LIVE_RCMD && removeLive
+                || type == mType.RELATIVE_TOPIC && removeTopic
+                || type == mType.VIP_RCMD && removeVipRcmd;
     }
 
     @SuppressWarnings("unused")
     private final class TYPE {
         private int AD;
+        private int AD_POSITION_LIVING_TYPE;
         private int BANNER_AD;
         private int COMMENT;
         private int COMMENT_DELETE;
+        private int COMMENT_IN_PICTURE;
+        private int COMMENT_LIVING_TYPE;
         private int COMMENT_WITH_RES_CARD;
         private int COMMON_SECTION;
+        private int COMMON_SECTION_IN_PICTURE;
         private int CONCERT_INFO;
         private int FESTIVAL;
         private int GENERAL;
         private int LIVE;
+        private int LIVE_RCMD;
         private int MORE_HOT_COMMENT;
         private int RECENT_COMMENT_SECTION;
         private int RELATIVE_TOPIC;
         private int UNKONWN;
         private int VIDEO;
         private int VIDEO_AD;
+        private int VIP_RCMD;
 
         private Class<?> classTYPE;
 
@@ -80,21 +91,27 @@ public class CommentListHook extends BaseHook {
             String className = "com.netease.cloudmusic.meta.virtual.CommentListEntry$TYPE";
             classTYPE = findClass(className, loader);
             AD = getValue("AD");
+            AD_POSITION_LIVING_TYPE = getValue("AD_POSITION_LIVING_TYPE");
             BANNER_AD = getValue("BANNER_AD");
             COMMENT = getValue("COMMENT");
             COMMENT_DELETE = getValue("COMMENT_DELETE");
+            COMMENT_IN_PICTURE = getValue("COMMENT_IN_PICTURE");
+            COMMENT_LIVING_TYPE = getValue("COMMENT_LIVING_TYPE");
             COMMENT_WITH_RES_CARD = getValue("COMMENT_WITH_RES_CARD");
             COMMON_SECTION = getValue("COMMON_SECTION");
+            COMMON_SECTION_IN_PICTURE = getValue("COMMON_SECTION_IN_PICTURE");
             CONCERT_INFO = getValue("CONCERT_INFO");
             FESTIVAL = getValue("FESTIVAL");
             GENERAL = getValue("GENERAL");
             LIVE = getValue("LIVE");
+            LIVE_RCMD = getValue("LIVE_RCMD");
             MORE_HOT_COMMENT = getValue("MORE_HOT_COMMENT");
             RECENT_COMMENT_SECTION = getValue("RECENT_COMMENT_SECTION");
             RELATIVE_TOPIC = getValue("RELATIVE_TOPIC");
             UNKONWN = getValue("UNKONWN");
             VIDEO = getValue("VIDEO");
             VIDEO_AD = getValue("VIDEO_AD");
+            VIP_RCMD = getValue("VIP_RCMD");
         }
 
         private int getValue(String field) {

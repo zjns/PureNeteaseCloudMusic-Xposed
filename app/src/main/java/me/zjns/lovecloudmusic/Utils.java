@@ -1,9 +1,13 @@
 package me.zjns.lovecloudmusic;
 
 import android.app.ActivityManager;
+import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
 
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -41,6 +45,11 @@ public final class Utils {
         }
     }
 
+    public static Application getCurrentApplication() {
+        Object thread = callStaticMethod(findClass("android.app.ActivityThread", null), "currentActivityThread");
+        return (Application) callMethod(thread, "getApplication");
+    }
+
     public static boolean isPackageInstalled(Context context, String pkgName) {
         boolean flag = false;
         try {
@@ -75,6 +84,11 @@ public final class Utils {
     public static boolean isInMainProcess(Context context) {
         String current = getCurrentProcessName(context);
         return current.equals(context.getPackageName());
+    }
+
+    public static void showToast(String message, boolean longTime, long delay) {
+        int duration = longTime ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT;
+        new Handler(Looper.getMainLooper()).postDelayed(() -> Toast.makeText(getCurrentApplication(), message, duration).show(), delay);
     }
 
     @SuppressWarnings("all")

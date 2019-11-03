@@ -36,7 +36,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        checkActiveState();
+        // checkActiveState();
     }
 
     private void checkActiveState() {

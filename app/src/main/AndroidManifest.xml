@@ -4,9 +4,10 @@
 
     <application
         android:allowBackup="true"
+        android:icon="@android:drawable/sym_def_app_icon"
         android:label="云村清洁工"
         android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning,MissingApplicationIcon">
+        tools:ignore="GoogleAppIndexingWarning">
         <activity-alias
             android:name=".MainActivityAlias"
             android:targetActivity=".MainActivity">
@@ -17,7 +18,7 @@
         </activity-alias>
         <activity
             android:name=".MainActivity"
-            android:launchMode="singleInstance">
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="de.robv.android.xposed.category.MODULE_SETTINGS" />

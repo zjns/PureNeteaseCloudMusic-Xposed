@@ -12,6 +12,7 @@
     <string name="remove_comment_topic_title">移除文章</string>
     <string name="remove_comment_concert_info_title">移除音乐会信息</string>
     <string name="remove_comment_live_title">移除直播</string>
+    <string name="remove_comment_vip_rcmd_title">移除相关推荐</string>
     <string name="enable_vip_feature_title">启用部分会员特权</string>
     <string name="enable_vip_feature_summary">免费使用会员主题，歌词图片及鲸云音效功能</string>
     <string name="zero_point_download_video_title">免积分下载超清MV</string>
@@ -33,7 +34,6 @@
     <string name="remove_my_info_view_title">移除主页顶部个人信息栏</string>
     <string name="enable_all_functions_title">启用模块</string>
     <string name="auto_sign_title">自动签到</string>
-    <string name="remove_video_flow_ad_title">移除视频流广告</string>
     <string name="remove_search_banner_ad_title">移除搜索界面Banner广告</string>
     <string name="work_right_now">更改立即生效</string>
     <string name="work_after_reload">更改在结束软件进程或者重启后生效</string>
@@ -42,4 +42,7 @@
     <string name="btn_ignore">忽略</string>
     <string name="toast_xposed_not_installed">未安装 Xposed Installer！</string>
     <string name="toast_exposed_not_installed">未安装太极！</string>
+    <string name="category_video_flow_title">视频流管理</string>
+    <string name="remove_video_flow_ad_title">移除广告</string>
+    <string name="remove_video_flow_live_title">移除直播</string>
 </resources>
